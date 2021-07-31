@@ -35,7 +35,7 @@ func ConnectSlave(port string, slaveId byte) (modbus.Client, error) {
 func ReadProduct(client modbus.Client) (*Product, error) {
 	p := Product{}
 
-	results, err := client.ReadHoldingRegisters(0x0200, 26)
+	results, err := client.ReadHoldingRegisters(PRODUCT_ADDR, PRODUCT_LEN)
 	if err != nil {
 		return &p, err
 	}

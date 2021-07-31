@@ -7,6 +7,9 @@ import (
 	"github.com/yerden/go-util/bcd"
 )
 
+const PRODUCT_ADDR = 0x200 // modbus start address
+const PRODUCT_LEN = 26     // number of registers
+
 type (
 	Product struct {
 		Specification           uint16
@@ -26,6 +29,9 @@ type (
 		ManufactureYear         uint16
 		ManufactureMonthDay     uint16
 		SerialNumber            [20]uint8
+	}
+
+	GateWay struct {
 	}
 )
 
