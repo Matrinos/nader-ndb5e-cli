@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"time"
 
 	"github.com/goburrow/modbus"
@@ -28,6 +30,22 @@ func ConnectSlave(port string, slaveId byte) (modbus.Client, error) {
 	client := modbus.NewClient(handler)
 
 	return client, nil
+}
+
+func ReadProduct(client modbus.Client) (*Product, error) {
+	p := Product{}
+
+	results, err := client.ReadHoldingRegisters(0x0200, 26)
+	if err != nil {
+		return &p, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &p)
+	if err != nil {
+		return &p, err
+	}
+
+	return &p, nil
 }
 
 // func sample() {
