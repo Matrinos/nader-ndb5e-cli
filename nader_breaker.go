@@ -33,6 +33,69 @@ type (
 
 	GateWay struct {
 	}
+
+	Data struct {
+		ACurrent            uint32
+		BCurrent            uint32
+		CCurrent            uint32
+		_                   uint32
+		_                   uint16
+		_                   uint16
+		_                   uint32
+		_                   uint32
+		_                   uint32
+		_                   uint32
+		_                   uint32
+		_                   uint32
+		AVoltage            uint16
+		BVoltage            uint16
+		CVoltage            uint16
+		ABVoltage           uint16
+		BCVoltage           uint16
+		CAVoltage           uint16
+		_                   uint16
+		_                   uint16
+		AFrequency          uint16
+		BFrequency          uint16
+		CFrequency          uint16
+		PhaseState          uint16
+		ARealPower          uint16
+		BRealPower          uint16
+		CRealPower          uint16
+		RealPowerTotal      uint16
+		AReactivePower      uint16
+		BReactivePower      uint16
+		CReactivePower      uint16
+		ReactivePowerTotal  uint16
+		AApparentPower      uint16
+		BApparentPower      uint16
+		CApparentPower      uint16
+		ApparentPowerTotal  uint16
+		_                   uint16
+		_                   uint16
+		_                   uint16
+		TotalUsagePower     uint16
+		APowerFactor        uint16
+		BPowerFactor        uint16
+		CPowerFactor        uint16
+		TotalPowerFactor    uint16
+		AActiveEnergy       uint32
+		BActiveEnergy       uint32
+		CActiveEnergy       uint32
+		ActiveEnergyTotal   uint32
+		AReactiveEnergy     uint32
+		BReactiveEnergy     uint32
+		CReactiveEnergy     uint32
+		ReactiveEnergyTotal uint32
+		AApparentEnergy     uint32
+		BApparentEnergy     uint32
+		CApparentEnergy     uint32
+		ApparentEnergyTotal uint32
+		Temprature          int16
+		LeakageCurrent      uint16
+	}
+
+	MultipleTenuinnt uint16
 )
 
 func (p Product) SerialNumberStr() string {
