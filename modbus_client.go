@@ -22,13 +22,13 @@ var Logger = log.New(os.Stdout, "ascii: ", log.LstdFlags)
 const (
 	ProtocolTCP = "modbus-tcp"
 	ProtocolRTU = "modbus-rtu"
-
-	Address  = "Address"
-	Port     = "Port"
-	UnitID   = "UnitID"
-	BaudRate = "BaudRate"
-	DataBits = "DataBits"
-	StopBits = "StopBits"
+	Protocol    = "Protocol"
+	Address     = "Address"
+	Port        = "Port"
+	UnitID      = "UnitID"
+	BaudRate    = "BaudRate"
+	DataBits    = "DataBits"
+	StopBits    = "StopBits"
 	// Parity: N - None, O - Odd, E - Even
 	Parity = "Parity"
 

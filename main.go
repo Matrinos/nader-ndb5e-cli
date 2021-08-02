@@ -1,82 +1,98 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
-	"os"
-	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/google/uuid"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
-	// If the file doesn't exist, create it, or append to the file
-	f, err := os.OpenFile("/Users/q.s.wang/OneDrive/projects/qidi/300 Specifications - 各项规范/360 Vendors/Nader/nader.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func main() {
+	initConfig()
+
+	client, err := initConnection()
+
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
-	defer f.Close()
-	payload := msg.Payload()
-	payload = append(payload, ","...)
+	// 	var cmdPrint = &cobra.Command{
+	// 		Use:   "print [string to print]",
+	// 		Short: "Print anything to the screen",
+	// 		Long: `print is for printing anything back to the screen.
+	// For many years people have printed back to the screen.`,
+	// 		Args: cobra.MinimumNArgs(1),
+	// 		Run: func(cmd *cobra.Command, args []string) {
+	// 			fmt.Println("Print: " + strings.Join(args, " "))
+	// 		},
+	// 	}
 
-	payload = bytes.Replace(payload, []byte("'"), []byte("\""), -1)
-
-	if _, err := f.Write(payload); err != nil {
-		log.Fatal(err)
-	}
-}
-
-var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("Connected")
-}
-
-var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	fmt.Printf("Connect lost: %v", err)
-}
-
-func main() {
-	var broker = "test.mosquitto.org"
-	var port = 1883
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
-	opts.SetClientID("go_mqtt_client-" + uuid.NewString())
-	// opts.SetUsername("emqx")
-	// opts.SetPassword("public")
-	opts.SetDefaultPublishHandler(messagePubHandler)
-	opts.OnConnect = connectHandler
-	opts.OnConnectionLost = connectLostHandler
-	client := mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+	var cmdMonitorPowerUsage = &cobra.Command{
+		Use:   "echo [string to echo]",
+		Short: "Echo anything to the screen",
+		Long: `echo is for echoing anything back.
+	Echo works a lot like print, except it has a child command.`,
+		Args: cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			ReadData(client)
+		},
 	}
 
-	sub(client)
-	// publish(client)
+	// 	var cmdTimes = &cobra.Command{
+	// 		Use:   "times [string to echo]",
+	// 		Short: "Echo anything to the screen more times",
+	// 		Long: `echo things multiple times back to the user by providing
+	// a count and a string.`,
+	// 		Args: cobra.MinimumNArgs(1),
+	// 		Run: func(cmd *cobra.Command, args []string) {
+	// 			for i := 0; i < echoTimes; i++ {
+	// 				fmt.Println("Echo: " + strings.Join(args, " "))
+	// 			}
+	// 		},
+	// 	}
 
-	// instead of busy loop
-	for {
-		time.Sleep(time.Second)
-		// do something
-	}
+	cmdTimes.Flags().IntVarP(&echoTimes, "times", "t", 1, "times to echo the input")
+
+	var rootCmd = &cobra.Command{Use: "app"}
+	rootCmd.AddCommand(cmdPrint, cmdMonitorPowerUsage)
+	cmdMonitorPowerUsage.AddCommand(cmdTimes)
+	rootCmd.Execute()
 }
 
-// func publish(client mqtt.Client) {
-// 	num := 10
-// 	for i := 0; i < num; i++ {
-// 		text := fmt.Sprintf("Message %d", i)
-// 		token := client.Publish("topic/test", 0, false, text)
-// 		token.Wait()
-// 		time.Sleep(time.Second)
-// 	}
-// }
+func initConfig() {
+	viper.SetConfigName("config")       // name of config file (without extension)
+	viper.SetConfigType("yaml")         // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath("/etc/nader/")  // path to look for the config file in
+	viper.AddConfigPath("$HOME/.nader") // call multiple times to add many search paths
+	viper.AddConfigPath(".")
+	viper.SetDefault(Protocol, ProtocolTCP)
+	viper.SetDefault(UnitID, 100)
+	viper.SetDefault(Address, "/dev/ttyUSB0")
+	// viper.SetDefault(BaudRate, 9600)
+	// viper.SetDefault(DataBits, 8)
+	// viper.SetDefault(StopBits, 1)
+	// viper.SetDefault(Parity, "N")
+	// viper.SetDefault(Timeout, 5)
+	// viper.SetDefault(IdleTimeout, 60)
 
-func sub(client mqtt.Client) {
-	topic := "matrinos/60e51b59f13f88fe371ac29b/1"
-	token := client.Subscribe(topic, 1, nil)
-	token.Wait()
-	fmt.Printf("Subscribed to topic: %s", topic)
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+	}
+
+}
+
+func initConnection() (*ModbusClient, error) {
+	protocol := viper.Get(Protocol)
+	if protocol == ProtocolRTU {
+		address := viper.GetString(Address)
+		unitID := uint8(viper.GetUint(UnitID))
+
+		return ConnectSlave(address, unitID)
+	}
+
+	//TODO: handle unknow case
+	return nil, nil
 }

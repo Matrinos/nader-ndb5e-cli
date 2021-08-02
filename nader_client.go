@@ -8,7 +8,7 @@ import (
 // results, err := client.ReadDiscreteInputs(15, 2)
 // 9600, 8, "N", 1
 // address : "/dev/ttyUSB0"
-func ConnectSlave(address string, slaveId byte) (*ModbusClient, error) {
+func ConnectSlave(address string, slaveId uint8) (*ModbusClient, error) {
 	// Modbus RTU/ASCII
 	client, err := NewDeviceClient(&ConnectionInfo{
 		BaudRate:    9600,
