@@ -1,98 +1,154 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
+	"os"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	initConfig()
-
-	client, err := initConnection()
-
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	// 	var cmdPrint = &cobra.Command{
-	// 		Use:   "print [string to print]",
-	// 		Short: "Print anything to the screen",
-	// 		Long: `print is for printing anything back to the screen.
-	// For many years people have printed back to the screen.`,
-	// 		Args: cobra.MinimumNArgs(1),
-	// 		Run: func(cmd *cobra.Command, args []string) {
-	// 			fmt.Println("Print: " + strings.Join(args, " "))
-	// 		},
-	// 	}
-
-	var cmdMonitorPowerUsage = &cobra.Command{
-		Use:   "echo [string to echo]",
-		Short: "Echo anything to the screen",
-		Long: `echo is for echoing anything back.
-	Echo works a lot like print, except it has a child command.`,
-		Args: cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			ReadData(client)
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:    "slave",
+				Aliases: []string{"s"},
+				Value:   100,
+				Usage:   "Slave ID",
+			},
+			&cli.StringFlag{
+				Name:     "address",
+				Aliases:  []string{"a"},
+				Value:    "",
+				Usage:    "/dev/usb....",
+				Required: true,
+			},
+		},
+		Commands: []*cli.Command{
+			{
+				Name:    "turnon",
+				Aliases: []string{"to"},
+				Usage:   "Turn on",
+				Action:  turnOn,
+			},
+			{
+				Name:    "turnoff",
+				Aliases: []string{"tf"},
+				Usage:   "Turn off",
+				Action:  turnOff,
+			},
+			{
+				Name:    "powerdata",
+				Aliases: []string{"pd"},
+				Usage:   "Read power data",
+				Action:  readData,
+			},
+			{
+				Name:    "product",
+				Aliases: []string{"po"},
+				Usage:   "Read product information",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
+			{
+				Name:    "operation",
+				Aliases: []string{"op"},
+				Usage:   "Operation parameter",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
+			{
+				Name:    "runstatus",
+				Aliases: []string{"rs"},
+				Usage:   "Operation parameter",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
+			{
+				Name:    "protectparameters",
+				Aliases: []string{"pp"},
+				Usage:   "Protect parameters",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
+			{
+				Name:    "summary",
+				Aliases: []string{"su"},
+				Usage:   "Summary data",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
+			{
+				Name:    "logs",
+				Aliases: []string{"lg"},
+				Usage:   "Full logs",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
 		},
 	}
 
-	// 	var cmdTimes = &cobra.Command{
-	// 		Use:   "times [string to echo]",
-	// 		Short: "Echo anything to the screen more times",
-	// 		Long: `echo things multiple times back to the user by providing
-	// a count and a string.`,
-	// 		Args: cobra.MinimumNArgs(1),
-	// 		Run: func(cmd *cobra.Command, args []string) {
-	// 			for i := 0; i < echoTimes; i++ {
-	// 				fmt.Println("Echo: " + strings.Join(args, " "))
-	// 			}
-	// 		},
-	// 	}
-
-	cmdTimes.Flags().IntVarP(&echoTimes, "times", "t", 1, "times to echo the input")
-
-	var rootCmd = &cobra.Command{Use: "app"}
-	rootCmd.AddCommand(cmdPrint, cmdMonitorPowerUsage)
-	cmdMonitorPowerUsage.AddCommand(cmdTimes)
-	rootCmd.Execute()
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func initConfig() {
-	viper.SetConfigName("config")       // name of config file (without extension)
-	viper.SetConfigType("yaml")         // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath("/etc/nader/")  // path to look for the config file in
-	viper.AddConfigPath("$HOME/.nader") // call multiple times to add many search paths
-	viper.AddConfigPath(".")
-	viper.SetDefault(Protocol, ProtocolTCP)
-	viper.SetDefault(UnitID, 100)
-	viper.SetDefault(Address, "/dev/ttyUSB0")
-	// viper.SetDefault(BaudRate, 9600)
-	// viper.SetDefault(DataBits, 8)
-	// viper.SetDefault(StopBits, 1)
-	// viper.SetDefault(Parity, "N")
-	// viper.SetDefault(Timeout, 5)
-	// viper.SetDefault(IdleTimeout, 60)
-
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+func turnOff(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		log.Fatal(err)
+		return err
 	}
-
+	return SwitchBreaker(client, false)
 }
 
-func initConnection() (*ModbusClient, error) {
-	protocol := viper.Get(Protocol)
-	if protocol == ProtocolRTU {
-		address := viper.GetString(Address)
-		unitID := uint8(viper.GetUint(UnitID))
+func turnOn(c *cli.Context) error {
+	client, err := openConnection(c)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return SwitchBreaker(client, true)
+}
 
-		return ConnectSlave(address, unitID)
+func readData(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		log.Fatal(err)
+		return err
 	}
 
-	//TODO: handle unknow case
-	return nil, nil
+	data, err := ReadData(client)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	jsonData, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	log.Println(string(jsonData))
+
+	return nil
+}
+
+func openConnection(c *cli.Context) (*ModbusClient, error) {
+	slaveID := c.Int("slave")
+	address := c.String("address")
+
+	return ConnectSlave(address, uint8(slaveID))
+
 }
