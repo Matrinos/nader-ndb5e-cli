@@ -31,6 +31,7 @@ func ConnectSlave(address string, slaveID uint8) (*ModbusClient, error) {
 		return client, err
 	}
 
+	Logger.Println("Device connected")
 	return client, nil
 }
 
@@ -68,7 +69,7 @@ func ReadData(client *ModbusClient) (*Data, error) {
 
 func SwitchBreaker(client *ModbusClient, is_on bool) error {
 	if is_on {
-		client.WriteSingleRegister(0x0400, 0xff)
+		return client.WriteSingleRegister(0x0400, 0xff)
 	}
 
 	return client.WriteSingleRegister(0x0400, 0xff00)
