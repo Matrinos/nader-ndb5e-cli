@@ -40,6 +40,23 @@ type (
 		MinuteSecond uint16
 	}
 
+	RunStatus struct {
+		OperateTime          uint16
+		ContactWear          uint16
+		SelfDiagnosticAlarm  uint16
+		AlarmStatus          uint16
+		RunStatus1           uint16
+		RunStatus2           uint16
+		AlarmIncreaseing     uint16
+		_                    uint16
+		_                    uint16
+		BrakePositionChanges uint16
+		_                    uint16
+		CurrentTripTimes     uint16
+		OtherTripTimes       uint16
+		_                    uint16
+	}
+
 	GateWay struct {
 	}
 
@@ -158,6 +175,11 @@ func (p *Product) ToJson() ([]byte, error) {
 }
 
 func (p *OpParameters) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *RunStatus) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
