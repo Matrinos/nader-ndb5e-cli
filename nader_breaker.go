@@ -31,6 +31,12 @@ type (
 		SerialNumber            [20]uint8
 	}
 
+	OpParameters struct {
+		YearMonth    uint16
+		DayHour      uint16
+		MinuteSecond uint16
+	}
+
 	GateWay struct {
 	}
 

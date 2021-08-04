@@ -51,6 +51,22 @@ func ReadProduct(client *ModbusClient) (*Product, error) {
 	return &p, nil
 }
 
+func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
+	o := OpParameters{}
+
+	results, err := client.ReadHoldingRegisters(0x240, 3)
+	if err != nil {
+		return &o, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &o)
+	if err != nil {
+		return &o, err
+	}
+
+	return &o, nil
+}
+
 func ReadData(client *ModbusClient) (*Data, error) {
 	d := Data{}
 

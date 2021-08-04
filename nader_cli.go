@@ -54,9 +54,7 @@ func main() {
 				Name:    "operation",
 				Aliases: []string{"op"},
 				Usage:   "Operation parameter",
-				Action: func(c *cli.Context) error {
-					return nil
-				},
+				Action:  readOpParameters,
 			},
 			{
 				Name:    "runstatus",
@@ -145,6 +143,23 @@ func readProduct(c *cli.Context) error {
 	}
 
 	data, err := ReadProduct(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readOpParameters(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadOpParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
