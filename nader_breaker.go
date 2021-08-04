@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 
 	"github.com/yerden/go-util/bcd"
@@ -9,6 +11,7 @@ import (
 
 const PRODUCT_ADDR = 0x200 // modbus start address
 const PRODUCT_LEN = 26     // number of registers
+const MANUFACTURE_DATE = "ManufactureDate"
 
 type (
 	Product struct {
@@ -104,11 +107,15 @@ type (
 	MultipleTenuinnt uint16
 )
 
-func (p Product) SerialNumberStr() string {
-	return string(p.SerialNumber[:])
+type JsonMarshal interface {
+	ToJson() ([]byte, error)
 }
 
-func (p Product) ManufactureDate() (string, error) {
+func (p *Product) SerialNumberStr() string {
+	return string(bytes.Trim(p.SerialNumber[:], "\x00"))
+}
+
+func (p *Product) ManufactureDate() (string, error) {
 	year, err := UintToBCDString(p.ManufactureYear)
 	if err != nil {
 		return "", err
@@ -123,6 +130,45 @@ func (p Product) ManufactureDate() (string, error) {
 		monthDay)
 
 	return result, nil
+}
+
+func (p *Product) ToJson() ([]byte, error) {
+	jp, _ := json.Marshal(p)
+	var m map[string]interface{}
+	json.Unmarshal(jp, &m)
+
+	date, err := p.ManufactureDate()
+	if err != nil {
+		//TODO: handle error correctly
+		return []byte{}, err
+	}
+
+	m[MANUFACTURE_DATE] = date
+
+	for key := range m {
+		if key == "SerialNumber" {
+			m[key] = p.SerialNumberStr()
+		}
+		if key == "RatedVoltage" {
+			m[key] = float32(p.RatedVoltage) * 0.1
+		}
+	}
+
+	return json.Marshal(m)
+}
+
+func (p *OpParameters) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (d *Data) ToJson() ([]byte, error) {
+	jp, _ := json.Marshal(d)
+	var m map[string]interface{}
+	json.Unmarshal(jp, &m)
+
+	//TODO: custom logic here.
+	return json.Marshal(m)
 }
 
 func UintToBCDString(data uint16) (string, error) {

@@ -83,9 +83,11 @@ func (c *ModbusClient) OpenConnection() error {
 func (c *ModbusClient) CloseConnection() error {
 	var err error
 	if c.IsModbusTcp {
+		Logger.Println("Modbus client close TCP connection.")
 		err = c.TCPClientHandler.Close()
 
 	} else {
+		Logger.Println("Modbus client close RTU connection.")
 		err = c.RTUClientHandler.Close()
 	}
 	return err

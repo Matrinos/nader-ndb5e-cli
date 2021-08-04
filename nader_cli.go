@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -110,6 +109,7 @@ func turnOff(c *cli.Context) error {
 func turnOn(c *cli.Context) error {
 	Logger.Println("Turning on")
 	client, err := openConnection(c)
+	defer client.CloseConnection()
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -168,8 +168,8 @@ func readOpParameters(c *cli.Context) error {
 	return outputData(data)
 }
 
-func outputData(data interface{}) error {
-	jsonData, err := json.MarshalIndent(data, "", "    ")
+func outputData(data JsonMarshal) error {
+	jsonData, err := data.ToJson()
 	if err != nil {
 		Logger.Fatal(err)
 		return err
