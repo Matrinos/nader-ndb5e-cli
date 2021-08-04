@@ -67,6 +67,22 @@ func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 	return &o, nil
 }
 
+func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
+	r := RunStatus{}
+
+	results, err := client.ReadHoldingRegisters(0x250, 14)
+	if err != nil {
+		return &r, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &r)
+	if err != nil {
+		return &r, err
+	}
+
+	return &r, nil
+}
+
 func ReadData(client *ModbusClient) (*Data, error) {
 	d := Data{}
 

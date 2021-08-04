@@ -59,9 +59,7 @@ func main() {
 				Name:    "runstatus",
 				Aliases: []string{"rs"},
 				Usage:   "Operation parameter",
-				Action: func(c *cli.Context) error {
-					return nil
-				},
+				Action:  readRunStatus,
 			},
 			{
 				Name:    "protectparameters",
@@ -160,6 +158,23 @@ func readOpParameters(c *cli.Context) error {
 	}
 
 	data, err := ReadOpParameters(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readRunStatus(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadRunStatus(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
