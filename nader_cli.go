@@ -65,9 +65,7 @@ func main() {
 				Name:    "protectparameters",
 				Aliases: []string{"pp"},
 				Usage:   "Protect parameters",
-				Action: func(c *cli.Context) error {
-					return nil
-				},
+				Action:  readProtectParameters,
 			},
 			{
 				Name:    "summary",
@@ -124,6 +122,23 @@ func readData(c *cli.Context) error {
 	}
 
 	data, err := ReadData(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readProtectParameters(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadProtectParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err

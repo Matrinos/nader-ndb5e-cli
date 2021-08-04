@@ -121,6 +121,55 @@ type (
 		LeakageCurrent      uint16
 	}
 
+	ProtectParameters struct {
+		CurrentSettingValue    uint16
+		TimeSettingValue       uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		TotalPowerSettingValue uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		PhaseSequenceSwitch    uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		TemperatureSwitch      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		_                      uint16
+		OverVoltageSwitch      uint16
+		UnderVoltageSwitch     uint16
+		CurrentSwitch          uint16
+		_                      uint16
+		PhaseLossSwitch        uint16
+		_                      uint16
+		RequiredValueSwitch    uint16
+	}
+
 	MultipleTenuinnt uint16
 )
 
@@ -180,6 +229,11 @@ func (p *OpParameters) ToJson() ([]byte, error) {
 }
 
 func (p *RunStatus) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *ProtectParameters) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
