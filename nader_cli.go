@@ -82,12 +82,28 @@ func main() {
 				},
 			},
 			{
-				Name:    "summary",
-				Aliases: []string{"su"},
+				Name:    "summary1",
+				Aliases: []string{"su1"},
 				Usage:   "Summary data",
-				Action: func(c *cli.Context) error {
-					return nil
-				},
+				Action:  readSummary1,
+			},
+			{
+				Name:    "summary2",
+				Aliases: []string{"su2"},
+				Usage:   "Summary data",
+				Action:  readSummary2,
+			},
+			{
+				Name:    "summary3",
+				Aliases: []string{"su3"},
+				Usage:   "Summary data",
+				Action:  readSummary3,
+			},
+			{
+				Name:    "summary4",
+				Aliases: []string{"su4"},
+				Usage:   "Summary data",
+				Action:  readSummary4,
 			},
 			{
 				Name:    "logs",
@@ -170,6 +186,74 @@ func readRecord(c *cli.Context) error {
 	}
 
 	data, err := ReadRecord(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readSummary1(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadSummary1(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readSummary2(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadSummary2(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readSummary3(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadSummary3(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readSummary4(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadSummary4(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
