@@ -131,6 +131,70 @@ func ReadRecord(client *ModbusClient) (*Record, error) {
 	return &r, nil
 }
 
+func ReadSummary1(client *ModbusClient) (*Summary1, error) {
+	s := Summary1{}
+
+	results, err := client.ReadHoldingRegisters(0x500, 72)
+	if err != nil {
+		return &s, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &s)
+	if err != nil {
+		return &s, err
+	}
+
+	return &s, nil
+}
+
+func ReadSummary2(client *ModbusClient) (*Summary2, error) {
+	s := Summary2{}
+
+	results, err := client.ReadHoldingRegisters(0x548, 48)
+	if err != nil {
+		return &s, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &s)
+	if err != nil {
+		return &s, err
+	}
+
+	return &s, nil
+}
+
+func ReadSummary3(client *ModbusClient) (*Summary3, error) {
+	s := Summary3{}
+
+	results, err := client.ReadHoldingRegisters(0x578, 62)
+	if err != nil {
+		return &s, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &s)
+	if err != nil {
+		return &s, err
+	}
+
+	return &s, nil
+}
+
+func ReadSummary4(client *ModbusClient) (*Summary4, error) {
+	s := Summary4{}
+
+	results, err := client.ReadHoldingRegisters(0x5B6, 24)
+	if err != nil {
+		return &s, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &s)
+	if err != nil {
+		return &s, err
+	}
+
+	return &s, nil
+}
+
 func SwitchBreaker(client *ModbusClient, is_on bool) error {
 	if is_on {
 		return client.WriteSingleRegister(0x0400, 0xff)

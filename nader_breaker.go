@@ -189,6 +189,22 @@ type (
 		FaultMinuteSecond     uint16
 	}
 
+	Summary1 struct {
+		Temprature [144]int8
+	}
+
+	Summary2 struct {
+		ElectricEnergyPerHour [24]uint32
+	}
+
+	Summary3 struct {
+		ElectricEnergyPerDay [31]uint32
+	}
+
+	Summary4 struct {
+		ElectricEnergyPerMonth [12]uint32
+	}
+
 	MultipleTenuinnt uint16
 )
 
@@ -258,6 +274,26 @@ func (p *ProtectParameters) ToJson() ([]byte, error) {
 }
 
 func (p *Record) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *Summary1) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *Summary2) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *Summary3) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *Summary4) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
