@@ -170,6 +170,25 @@ type (
 		RequiredValueSwitch    uint16
 	}
 
+	Record struct {
+		FaultRecord           uint16
+		FaultReadNo           uint16
+		FaultCategory         uint16
+		_                     uint16
+		FaultRecordParameter1 uint16
+		_                     uint16
+		_                     uint16
+		_                     uint16
+		_                     uint16
+		_                     uint16
+		_                     uint16
+		_                     uint16
+		_                     uint16
+		FaultYearMonth        uint16
+		FaultDayHour          uint16
+		FaultMinuteSecond     uint16
+	}
+
 	MultipleTenuinnt uint16
 )
 
@@ -234,6 +253,11 @@ func (p *RunStatus) ToJson() ([]byte, error) {
 }
 
 func (p *ProtectParameters) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *Record) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
