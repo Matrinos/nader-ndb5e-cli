@@ -68,6 +68,20 @@ func main() {
 				Action:  readProtectParameters,
 			},
 			{
+				Name:    "record",
+				Aliases: []string{"re"},
+				Usage:   "Record information",
+				Action:  readRecord,
+			},
+			{
+				Name:    "telecommand",
+				Aliases: []string{"tc"},
+				Usage:   "telecommand",
+				Action: func(c *cli.Context) error {
+					return nil
+				},
+			},
+			{
 				Name:    "summary",
 				Aliases: []string{"su"},
 				Usage:   "Summary data",
@@ -139,6 +153,23 @@ func readProtectParameters(c *cli.Context) error {
 	}
 
 	data, err := ReadProtectParameters(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readRecord(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadRecord(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err

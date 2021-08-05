@@ -102,7 +102,7 @@ func ReadData(client *ModbusClient) (*Data, error) {
 func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	p := ProtectParameters{}
 
-	results, err := client.ReadHoldingRegisters(0x260, 80)
+	results, err := client.ReadHoldingRegisters(0x300, 46)
 	if err != nil {
 		return &p, err
 	}
@@ -113,6 +113,22 @@ func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	}
 
 	return &p, nil
+}
+
+func ReadRecord(client *ModbusClient) (*Record, error) {
+	r := Record{}
+
+	results, err := client.ReadHoldingRegisters(0x340, 16)
+	if err != nil {
+		return &r, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &r)
+	if err != nil {
+		return &r, err
+	}
+
+	return &r, nil
 }
 
 func SwitchBreaker(client *ModbusClient, is_on bool) error {
