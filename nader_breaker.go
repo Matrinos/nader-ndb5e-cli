@@ -189,6 +189,10 @@ type (
 		FaultMinuteSecond     uint16
 	}
 
+	Logs1 struct {
+		FaultLogs1 [20]uint16
+	}
+
 	Summary1 struct {
 		Temprature [144]int8
 	}
@@ -294,6 +298,11 @@ func (p *Summary3) ToJson() ([]byte, error) {
 }
 
 func (p *Summary4) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
+func (p *Logs1) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
