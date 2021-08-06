@@ -99,6 +99,22 @@ func ReadData(client *ModbusClient) (*Data, error) {
 	return &d, nil
 }
 
+func ReadLogs1(client *ModbusClient) (*Logs1, error) {
+	l := Logs1{}
+
+	results, err := client.ReadHoldingRegisters(0x800, 20)
+	if err != nil {
+		return &l, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &l)
+	if err != nil {
+		return &l, err
+	}
+
+	return &l, nil
+}
+
 func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	p := ProtectParameters{}
 

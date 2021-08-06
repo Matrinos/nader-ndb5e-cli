@@ -106,12 +106,10 @@ func main() {
 				Action:  readSummary4,
 			},
 			{
-				Name:    "logs",
-				Aliases: []string{"lg"},
-				Usage:   "Full logs",
-				Action: func(c *cli.Context) error {
-					return nil
-				},
+				Name:    "logs1",
+				Aliases: []string{"lg1"},
+				Usage:   "Full logs- first record log",
+				Action:  readLogs1,
 			},
 		},
 	}
@@ -152,6 +150,23 @@ func readData(c *cli.Context) error {
 	}
 
 	data, err := ReadData(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return outputData(data)
+}
+
+func readLogs1(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	data, err := ReadLogs1(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
