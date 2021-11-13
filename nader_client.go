@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 )
 
+// ConnectSlave try to connect to given slave id
 // results, err := client.ReadDiscreteInputs(15, 2)
 // 9600, 8, "N", 1
 // address : "/dev/ttyUSB0"
@@ -67,6 +68,7 @@ func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 	return &o, nil
 }
 
+// ReadRunStatus read run status of the device
 func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
 	r := RunStatus{}
 
