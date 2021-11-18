@@ -55,7 +55,7 @@ func ReadProduct(client *ModbusClient) (*Product, error) {
 func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 	o := OpParameters{}
 
-	results, err := client.ReadHoldingRegisters(0x240, 3)
+	results, err := client.ReadHoldingRegisters(OPPARAMETERS_ADDR, OPPARAMETERS_LEN)
 	if err != nil {
 		return &o, err
 	}
@@ -72,7 +72,7 @@ func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
 	r := RunStatus{}
 
-	results, err := client.ReadHoldingRegisters(0x250, 14)
+	results, err := client.ReadHoldingRegisters(RUNSTATUS_ADDR, RUNSTATUS_LEN)
 	if err != nil {
 		return &r, err
 	}
@@ -85,10 +85,10 @@ func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
 	return &r, nil
 }
 
-func ReadData(client *ModbusClient) (*Data, error) {
-	d := Data{}
+func ReadData(client *ModbusClient) (*MetricalData, error) {
+	d := MetricalData{}
 
-	results, err := client.ReadHoldingRegisters(0x260, 80)
+	results, err := client.ReadHoldingRegisters(METRICALDATA_ADDR, METRICALDATA_LEN)
 	if err != nil {
 		return &d, err
 	}
@@ -101,10 +101,10 @@ func ReadData(client *ModbusClient) (*Data, error) {
 	return &d, nil
 }
 
-func ReadLogs1(client *ModbusClient) (*Logs1, error) {
-	l := Logs1{}
+func ReadLogs1(client *ModbusClient) (*RecordLogs, error) {
+	l := RecordLogs{}
 
-	results, err := client.ReadHoldingRegisters(0x800, 20)
+	results, err := client.ReadHoldingRegisters(FAULTRECORDLOG_ADDR, RECORD_LOG_LEN)
 	if err != nil {
 		return &l, err
 	}
@@ -120,7 +120,7 @@ func ReadLogs1(client *ModbusClient) (*Logs1, error) {
 func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	p := ProtectParameters{}
 
-	results, err := client.ReadHoldingRegisters(0x300, 46)
+	results, err := client.ReadHoldingRegisters(PRETECTPARAMETERS_ADDR, PRETECTPARAMETERS_LEN)
 	if err != nil {
 		return &p, err
 	}
@@ -133,10 +133,10 @@ func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	return &p, nil
 }
 
-func ReadRecord(client *ModbusClient) (*Record, error) {
+func ReadRecord(client *ModbusClient, record uint16) (*Record, error) {
 	r := Record{}
 
-	results, err := client.ReadHoldingRegisters(0x340, 16)
+	results, err := client.ReadHoldingRegisters(record, RECORD_INFO_LEN)
 	if err != nil {
 		return &r, err
 	}
@@ -152,7 +152,7 @@ func ReadRecord(client *ModbusClient) (*Record, error) {
 func ReadSummary1(client *ModbusClient) (*Summary1, error) {
 	s := Summary1{}
 
-	results, err := client.ReadHoldingRegisters(0x500, 72)
+	results, err := client.ReadHoldingRegisters(FE_TEMPERATURES_ADDR, FE_TEMPERATURES_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -168,7 +168,7 @@ func ReadSummary1(client *ModbusClient) (*Summary1, error) {
 func ReadSummary2(client *ModbusClient) (*Summary2, error) {
 	s := Summary2{}
 
-	results, err := client.ReadHoldingRegisters(0x548, 48)
+	results, err := client.ReadHoldingRegisters(FE_ENERGYPERHOUR_ADDR, FE_ENERGYPERHOUR_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -184,7 +184,7 @@ func ReadSummary2(client *ModbusClient) (*Summary2, error) {
 func ReadSummary3(client *ModbusClient) (*Summary3, error) {
 	s := Summary3{}
 
-	results, err := client.ReadHoldingRegisters(0x578, 62)
+	results, err := client.ReadHoldingRegisters(FE_ENERGYPERDAY_ADDR, FE_ENERGYPERDAY_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -200,7 +200,23 @@ func ReadSummary3(client *ModbusClient) (*Summary3, error) {
 func ReadSummary4(client *ModbusClient) (*Summary4, error) {
 	s := Summary4{}
 
-	results, err := client.ReadHoldingRegisters(0x5B6, 24)
+	results, err := client.ReadHoldingRegisters(FE_ENERGYPERMONTH_ADDR, FE_ENERGYPERMONTH_LEN)
+	if err != nil {
+		return &s, err
+	}
+
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &s)
+	if err != nil {
+		return &s, err
+	}
+
+	return &s, nil
+}
+
+func ReadRemoteCmd(client *ModbusClient) (*RemoteControlParameter, error) {
+	s := RemoteControlParameter{}
+
+	results, err := client.ReadHoldingRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -219,6 +235,16 @@ func SwitchBreaker(client *ModbusClient, is_on bool) error {
 	}
 
 	return client.WriteSingleRegister(0x0400, 0xff00)
+}
+
+func SetTimerToSwitch(client *ModbusClient, params *RemoteControlParameter) error {
+
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, params)
+	if err != nil {
+		return err
+	}
+	return client.WriteMultipleRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN, buf.Bytes())
 }
 
 // func sample() {

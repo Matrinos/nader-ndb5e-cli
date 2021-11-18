@@ -13,6 +13,43 @@ const PRODUCT_ADDR = 0x200 // modbus start address
 const PRODUCT_LEN = 26     // number of registers
 const MANUFACTURE_DATE = "ManufactureDate"
 
+const FAULTRECORD_ADDR = 0x340
+const ALARMRECORD_ADDR = 0x350
+const SWITCHRECORD_ADDR = 360
+const RECORD_INFO_LEN = 16
+
+const OPPARAMETERS_ADDR = 0x240
+const OPPARAMETERS_LEN = 3
+
+const RUNSTATUS_ADDR = 0x250
+const RUNSTATUS_LEN = 14
+
+const METRICALDATA_ADDR = 0x0260
+const METRICALDATA_LEN = 80
+
+const PRETECTPARAMETERS_ADDR = 0x0300
+const PRETECTPARAMETERS_LEN = 46
+
+const REMOTECONTROL_ADDR = 0x0407
+const REMOTECONTROL_LEN = 20 //36
+
+const FE_TEMPERATURES_ADDR = 0x0500
+const FE_TEMPERATURES_LEN = 72
+
+const FE_ENERGYPERHOUR_ADDR = 0x0548
+const FE_ENERGYPERHOUR_LEN = 48
+
+const FE_ENERGYPERDAY_ADDR = 0x0578
+const FE_ENERGYPERDAY_LEN = 62
+
+const FE_ENERGYPERMONTH_ADDR = 0x05B6
+const FE_ENERGYPERMONTH_LEN = 24
+
+const FAULTRECORDLOG_ADDR = 0x0800
+const ALARMRECORDLOG_ADDR = 0x0918
+const SWITCHCORDLOG_ADDR = 0x0A30
+const RECORD_LOG_LEN = 14
+
 type (
 	Product struct {
 		Specification           uint16
@@ -60,7 +97,7 @@ type (
 	GateWay struct {
 	}
 
-	Data struct {
+	MetricalData struct {
 		ACurrent            uint32
 		BCurrent            uint32
 		CCurrent            uint32
@@ -117,7 +154,7 @@ type (
 		BApparentEnergy     uint32
 		CApparentEnergy     uint32
 		ApparentEnergyTotal uint32
-		Temprature          int16
+		Temperature         int16
 		LeakageCurrent      uint16
 	}
 
@@ -189,12 +226,51 @@ type (
 		FaultMinuteSecond     uint16
 	}
 
-	Logs1 struct {
-		FaultLogs1 [20]uint16
+	RemoteControlParameter struct {
+		//OperateCmd      uint16
+		//_               uint16
+		//_               uint16
+		//_               uint16
+		//_               uint16
+		//_               uint16
+		//_               uint16
+		TimeOffDH0 uint16
+		TimeOffMS0 uint16
+		TimeOnDH0  uint16
+		TimeOnMS0  uint16
+		TimeOffDH1 uint16
+		TimeOffMS1 uint16
+		TimeOnDH1  uint16
+		TimeOnMS1  uint16
+		TimeOffDH2 uint16
+		TimeOffMS2 uint16
+		TimeOnDH2  uint16
+		TimeOnMS2  uint16
+		TimeOffDH3 uint16
+		TimeOffMS3 uint16
+		TimeOnDH3  uint16
+		TimeOnMS3  uint16
+		TimeOffDH4 uint16
+		TimeOffMS4 uint16
+		TimeOnDH4  uint16
+		TimeOnMS4  uint16
+		//_               uint16
+		//_               uint16
+		//_               uint16
+		//_               uint16
+		//OneKeySwitch    uint16
+		//SwitchRegister1 uint16
+		//SwitchRegister2 uint16
+		//SwitchRegister3 uint16
+		//SwitchRegister4 uint16
+	}
+
+	RecordLogs struct {
+		Log [14]uint16
 	}
 
 	Summary1 struct {
-		Temprature [144]int8
+		Temperature [144]int8
 	}
 
 	Summary2 struct {
@@ -282,6 +358,11 @@ func (p *Record) ToJson() ([]byte, error) {
 	return json.Marshal(p)
 }
 
+func (p *RemoteControlParameter) ToJson() ([]byte, error) {
+
+	return json.Marshal(p)
+}
+
 func (p *Summary1) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
@@ -302,12 +383,12 @@ func (p *Summary4) ToJson() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-func (p *Logs1) ToJson() ([]byte, error) {
+func (p *RecordLogs) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
 
-func (d *Data) ToJson() ([]byte, error) {
+func (d *MetricalData) ToJson() ([]byte, error) {
 	jp, _ := json.Marshal(d)
 	var m map[string]interface{}
 	json.Unmarshal(jp, &m)
