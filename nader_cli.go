@@ -177,7 +177,44 @@ func setTimerToSwitch(c *cli.Context) error {
 	}
 
 	r := RemoteControlParameter{}
-	r.TimeOffDH0 = 0x0203
+
+	//for test
+	/*
+		var w uint16 = TIMER_SUNDAY << 8 //week sunday
+		var h uint16 = 0x15              //hour    15
+		var t uint16 = 0x3500            //minute   20:00
+
+		r.TimeOffDH0 = w | h
+		r.TimeOffMS0 = t + 0x0000
+
+		r.TimeOnDH0 = w | h
+		r.TimeOnMS0 = t + 0x0100
+
+		r.TimeOffDH1 = w | h
+		r.TimeOffMS1 = t + 0x0200
+
+		r.TimeOnDH1 = w | h
+		r.TimeOnMS1 = t + 0x0300
+
+		r.TimeOffDH2 = w | h
+		r.TimeOffMS2 = t + 0x0400
+
+		r.TimeOnDH2 = w | h
+		r.TimeOnMS2 = t + 0x0500
+
+		r.TimeOffDH3 = w | h
+		r.TimeOffMS3 = 0x0600
+
+		r.TimeOnDH3 = w | h
+		r.TimeOnMS3 = t + 0x0700
+
+		r.TimeOnDH4 = w | h
+		r.TimeOnMS4 = t + 0x0800
+
+		r.TimeOffDH4 = w | h
+		r.TimeOffMS4 = t + 0x0900
+	*/
+	GetRemoteCtlSetting(&r)
 	return SetTimerToSwitch(client, &r)
 }
 

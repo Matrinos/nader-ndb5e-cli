@@ -50,6 +50,16 @@ const ALARMRECORDLOG_ADDR = 0x0918
 const SWITCHCORDLOG_ADDR = 0x0A30
 const RECORD_LOG_LEN = 14
 
+const TIMER_MONDAY = 0x01
+const TIMER_TUESDAY = TIMER_MONDAY << 1
+const TIMER_WEDNESDAY = TIMER_MONDAY << 2
+const TIMER_THURSDAY = TIMER_MONDAY << 3
+const TIMER_FIRDAY = TIMER_MONDAY << 4
+const TIMER_SATURDAY = TIMER_MONDAY << 5
+const TIMER_SUNDAY = TIMER_MONDAY << 6
+
+const GROUPFULL_FLAG = 0x8000
+
 type (
 	Product struct {
 		Specification           uint16
@@ -411,4 +421,243 @@ func UintToBCDString(data uint16) (string, error) {
 	}
 
 	return string(dst[:n]), nil
+}
+
+func UintToBCD(data uint16) uint16 {
+
+	return (((data & 0x3f) / 10) << 4) | ((data & 0x3f) % 10)
+}
+
+func GetDayHour(arrDay []interface{}, strTime string) (uint16, error) {
+	mapDays := map[string]uint16{
+		"Monday":    TIMER_MONDAY,
+		"Tuesday":   TIMER_TUESDAY,
+		"Wednesday": TIMER_WEDNESDAY,
+		"Thursday":  TIMER_THURSDAY,
+		"Firday":    TIMER_FIRDAY,
+		"Saturday":  TIMER_SATURDAY,
+		"Sunday":    TIMER_SUNDAY,
+	}
+
+	var nDay uint16 = 0
+	for i := 0; i < len(arrDay); i++ {
+		strDay := arrDay[i].(string)
+		if v, ok := mapDays[strDay]; ok {
+			fmt.Println(v)
+			nDay |= v
+		}
+	}
+
+	var h, m, s uint16 = 0, 0, 0
+	_, err := fmt.Sscanf(strTime, "%d:%d:%d", &h, &m, &s)
+
+	if err != nil {
+		return 0, err
+	}
+
+	nDay <<= 8
+	nDay |= UintToBCD(h)
+	return nDay, err
+}
+
+func GetMinute(strTime string) (uint16, error) {
+	var h, m, s uint16 = 0, 0, 0
+	_, err := fmt.Sscanf(strTime, "%d:%d:%d", &h, &m, &s)
+	if err != nil {
+		return 0, err
+	}
+
+	var nMinute uint16 = 0
+	nMinute = UintToBCD(m)
+
+	return (nMinute << 8), err
+}
+
+func GetRemoteCtlSetting(Params *RemoteControlParameter) {
+	var strJson string = "{\"TimeOffDay0\":[\"Monday\",\"Sunday\"],\"TimeOffTime0\":\"15:40:34\",\"TimeOnDay0\":[\"Monday\",\"Sunday\"],\"TimeOnTime0\":\"15:41:34\",\"TimeOffDay1\":[\"Monday\",\"Sunday\"],\"TimeOffTime1\":\"15:42:34\",\"TimeOnDay1\":[\"Monday\",\"Sunday\"],\"TimeOnTime1\":\"15:43:34\",\"TimeOffDay2\":[\"Monday\",\"Sunday\"],\"TimeOffTime2\":\"15:44:34\",\"TimeOnDay2\":[\"Monday\",\"Sunday\"],\"TimeOnTime2\":\"15:45:34\",\"TimeOffDay3\":[\"Monday\",\"Sunday\"],\"TimeOffTime3\":\"15:46:34\",\"TimeOnDay3\":[\"Monday\",\"Sunday\"],\"TimeOnTime3\":\"15:47:34\",\"TimeOffDay4\":[\"Monday\",\"Sunday\"],\"TimeOffTime4\":\"15:48:34\",\"TimeOnDay4\":[\"Monday\",\"Sunday\"],\"TimeOnTime4\":\"15:49:34\"}"
+	jsonMap := make(map[string]interface{})
+
+	json.Unmarshal([]byte(strJson), &jsonMap)
+
+	//var Params RemoteControlParameter
+	var bAllGroups bool = true
+	//Group 0
+	if jsonMap["TimeOffDay0"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOffDay0"].([]interface{}), jsonMap["TimeOffTime0"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOffTime0"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOffDH0 = 0
+			Params.TimeOffMS0 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOffDH0 = nDayHour
+			Params.TimeOffMS0 = dMinute
+		}
+	} else {
+		Params.TimeOffDH0 = 0
+		Params.TimeOffMS0 = 0
+		bAllGroups = false
+	}
+
+	if jsonMap["TimeOnDay0"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOnDay0"].([]interface{}), jsonMap["TimeOnTime0"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOnTime0"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOnDH0 = 0
+			Params.TimeOnMS0 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOnDH0 = nDayHour
+			Params.TimeOnMS0 = dMinute
+		}
+	} else {
+		Params.TimeOnDH0 = 0
+		Params.TimeOnMS0 = 0
+		bAllGroups = false
+	}
+	//Group 1
+	if jsonMap["TimeOffDay1"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOffDay1"].([]interface{}), jsonMap["TimeOffTime1"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOffTime1"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOffDH1 = 0
+			Params.TimeOffMS1 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOffDH1 = nDayHour
+			Params.TimeOffMS1 = dMinute
+		}
+
+	} else {
+		Params.TimeOffDH1 = 0
+		Params.TimeOffMS1 = 0
+		bAllGroups = false
+	}
+
+	if jsonMap["TimeOnDay1"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOnDay1"].([]interface{}), jsonMap["TimeOnTime1"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOnTime1"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOnDH1 = 0
+			Params.TimeOnMS1 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOnDH1 = nDayHour
+			Params.TimeOnMS1 = dMinute
+		}
+	} else {
+		Params.TimeOnDH1 = 0
+		Params.TimeOnMS1 = 0
+		bAllGroups = false
+	}
+
+	//Group 2
+	if jsonMap["TimeOffDay2"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOffDay2"].([]interface{}), jsonMap["TimeOffTime2"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOffTime2"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOffDH2 = 0
+			Params.TimeOffMS2 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOffDH2 = nDayHour
+			Params.TimeOffMS2 = dMinute
+		}
+	} else {
+		Params.TimeOffDH2 = 0
+		Params.TimeOffMS2 = 0
+		bAllGroups = false
+	}
+
+	if jsonMap["TimeOnDay2"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOnDay2"].([]interface{}), jsonMap["TimeOnTime2"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOnTime2"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOnDH2 = 0
+			Params.TimeOnMS2 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOnDH2 = nDayHour
+			Params.TimeOnMS2 = dMinute
+		}
+	} else {
+		Params.TimeOnDH2 = 0
+		Params.TimeOnMS2 = 0
+		bAllGroups = false
+	}
+
+	//Group 3
+	if jsonMap["TimeOffDay3"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOffDay3"].([]interface{}), jsonMap["TimeOffTime3"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOffTime3"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOffDH3 = 0
+			Params.TimeOffMS3 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOffDH3 = nDayHour
+			Params.TimeOffMS3 = dMinute
+		}
+	} else {
+		Params.TimeOffDH3 = 0
+		Params.TimeOffMS3 = 0
+		bAllGroups = false
+	}
+
+	if jsonMap["TimeOnDay3"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOnDay3"].([]interface{}), jsonMap["TimeOnTime3"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOnTime3"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOnDH3 = 0
+			Params.TimeOnMS3 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOnDH3 = nDayHour
+			Params.TimeOnMS3 = dMinute
+		}
+	} else {
+		Params.TimeOnDH3 = 0
+		Params.TimeOnMS3 = 0
+		bAllGroups = false
+	}
+
+	//Group 4
+	if jsonMap["TimeOffDay4"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOffDay4"].([]interface{}), jsonMap["TimeOffTime4"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOffTime4"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOffDH4 = 0
+			Params.TimeOffMS4 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOffDH4 = nDayHour
+			Params.TimeOffMS4 = dMinute
+		}
+	} else {
+		Params.TimeOffDH4 = 0
+		Params.TimeOffMS4 = 0
+		bAllGroups = false
+	}
+
+	if jsonMap["TimeOnDay4"] != nil {
+		nDayHour, err1 := GetDayHour(jsonMap["TimeOnDay4"].([]interface{}), jsonMap["TimeOnTime4"].(string))
+		dMinute, err2 := GetMinute(jsonMap["TimeOnTime4"].(string))
+		if err1 != nil || err2 != nil {
+			Params.TimeOnDH4 = 0
+			Params.TimeOnMS4 = 0
+			bAllGroups = false
+		} else {
+			Params.TimeOnDH4 = nDayHour
+			Params.TimeOnMS4 = dMinute
+		}
+	} else {
+		Params.TimeOnDH4 = 0
+		Params.TimeOnMS4 = 0
+		bAllGroups = false
+	}
+
+	if bAllGroups {
+		Params.TimeOffDH0 |= GROUPFULL_FLAG
+	}
+
 }
