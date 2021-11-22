@@ -1,13 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
 
 	"github.com/urfave/cli/v2"
 )
 
-/*
 func main() {
 	app := &cli.App{
 		Flags: []cli.Flag{
@@ -71,8 +70,20 @@ func main() {
 			{
 				Name:    "record",
 				Aliases: []string{"re"},
-				Usage:   "Record information",
+				Usage:   "readRecord --recordtype=type, Record information",
 				Action:  readRecord,
+				Flags: []cli.Flag{
+					&cli.IntFlag{Name: "recordtype", Usage: "--recordtype"},
+				},
+			},
+			{
+				Name:    "setTimerToSwitch",
+				Aliases: []string{"st"},
+				Usage:   "Json file path --jsonpath=file",
+				Action:  setTimerToSwitch,
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "jsonpath", Usage: "--jsonpath"},
+				},
 			},
 			{
 				Name:    "telecommand",
@@ -107,10 +118,14 @@ func main() {
 				Action:  readSummary4,
 			},
 			{
-				Name:    "logs1",
-				Aliases: []string{"lg1"},
-				Usage:   "Full logs- first record log",
-				Action:  readLogs1,
+				Name:    "logs",
+				Aliases: []string{"lg"},
+				Usage:   "readLogs --logtype=type --logindex=index",
+				Action:  readLogs,
+				Flags: []cli.Flag{
+					&cli.IntFlag{Name: "logtype", Usage: "--logtype"},
+					&cli.IntFlag{Name: "logindex", Usage: "--logindex"},
+				},
 			},
 		},
 	}
@@ -120,8 +135,8 @@ func main() {
 		Logger.Fatal(err)
 	}
 }
-*/
 
+/*
 func main() {
 
 	set := flag.NewFlagSet("flag", 0)
@@ -145,7 +160,7 @@ func main() {
 	setTimerToSwitch(ctx)
 	readRemoteCmd(ctx)
 }
-
+*/
 func turnOff(c *cli.Context) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()
@@ -176,46 +191,9 @@ func setTimerToSwitch(c *cli.Context) error {
 		return err
 	}
 
-	r := RemoteControlParameter{}
+	jsonpath := c.String("jsonpath")
 
-	//for test
-	/*
-		var w uint16 = TIMER_SUNDAY << 8 //week sunday
-		var h uint16 = 0x15              //hour    15
-		var t uint16 = 0x3500            //minute   20:00
-
-		r.TimeOffDH0 = w | h
-		r.TimeOffMS0 = t + 0x0000
-
-		r.TimeOnDH0 = w | h
-		r.TimeOnMS0 = t + 0x0100
-
-		r.TimeOffDH1 = w | h
-		r.TimeOffMS1 = t + 0x0200
-
-		r.TimeOnDH1 = w | h
-		r.TimeOnMS1 = t + 0x0300
-
-		r.TimeOffDH2 = w | h
-		r.TimeOffMS2 = t + 0x0400
-
-		r.TimeOnDH2 = w | h
-		r.TimeOnMS2 = t + 0x0500
-
-		r.TimeOffDH3 = w | h
-		r.TimeOffMS3 = 0x0600
-
-		r.TimeOnDH3 = w | h
-		r.TimeOnMS3 = t + 0x0700
-
-		r.TimeOnDH4 = w | h
-		r.TimeOnMS4 = t + 0x0800
-
-		r.TimeOffDH4 = w | h
-		r.TimeOffMS4 = t + 0x0900
-	*/
-	GetRemoteCtlSetting(&r)
-	return SetTimerToSwitch(client, &r)
+	return SetTimerToSwitch(client, jsonpath)
 }
 
 func readData(c *cli.Context) error {
@@ -235,7 +213,7 @@ func readData(c *cli.Context) error {
 	return outputData(data)
 }
 
-func readLogs1(c *cli.Context) error {
+func readLogs(c *cli.Context) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()
 	if err != nil {
@@ -243,7 +221,21 @@ func readLogs1(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadLogs1(client)
+	var addr uint16 = 0
+	logtype := uint16(c.Int("logtype"))
+	logindex := uint16(c.Int("logindex"))
+
+	if logtype == FAULT_TYPE && logindex < MAX_FAULTRECORDLOG_NUM {
+		addr = (FAULTRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
+
+	} else if logtype == ALARM_TYPE && logindex < MAX_ALARMRECORDLOG_NUM {
+		addr = (ALARMRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
+	} else if logtype == SWITCH_TYPE && logindex < MAX_SWITCHRECORDLOG_NUM {
+		addr = (SWITCHRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
+	} else {
+
+	}
+	data, err := ReadLogs(client, addr)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -269,7 +261,7 @@ func readProtectParameters(c *cli.Context) error {
 	return outputData(data)
 }
 
-func readFaultRecord(c *cli.Context) error {
+func readRecord(c *cli.Context) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()
 	if err != nil {
@@ -277,41 +269,19 @@ func readFaultRecord(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadRecord(client, FAULTRECORD_ADDR)
-	if err != nil {
-		Logger.Fatal(err)
+	var addr uint16 = 0
+	recodetype := c.Int("recodetype")
+	if recodetype == FAULT_TYPE {
+		addr = FAULTRECORD_ADDR
+	} else if recodetype == ALARM_TYPE {
+		addr = ALARMRECORD_ADDR
+	} else if recodetype == SWITCH_TYPE {
+		addr = SWITCHRECORD_ADDR
+	} else {
 		return err
 	}
 
-	return outputData(data)
-}
-
-func readAlarmRecord(c *cli.Context) error {
-	client, err := openConnection(c)
-	defer client.CloseConnection()
-	if err != nil {
-		Logger.Fatal(err)
-		return err
-	}
-
-	data, err := ReadRecord(client, ALARMRECORD_ADDR)
-	if err != nil {
-		Logger.Fatal(err)
-		return err
-	}
-
-	return outputData(data)
-}
-
-func readSwitchRecord(c *cli.Context) error {
-	client, err := openConnection(c)
-	defer client.CloseConnection()
-	if err != nil {
-		Logger.Fatal(err)
-		return err
-	}
-
-	data, err := ReadRecord(client, SWITCHRECORD_ADDR)
+	data, err := ReadRecord(client, addr)
 	if err != nil {
 		Logger.Fatal(err)
 		return err

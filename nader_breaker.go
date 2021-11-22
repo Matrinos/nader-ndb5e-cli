@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/yerden/go-util/bcd"
 )
@@ -17,6 +18,10 @@ const FAULTRECORD_ADDR = 0x340
 const ALARMRECORD_ADDR = 0x350
 const SWITCHRECORD_ADDR = 360
 const RECORD_INFO_LEN = 16
+
+const FAULT_TYPE = 0
+const ALARM_TYPE = 1
+const SWITCH_TYPE = 2
 
 const OPPARAMETERS_ADDR = 0x240
 const OPPARAMETERS_LEN = 3
@@ -47,7 +52,10 @@ const FE_ENERGYPERMONTH_LEN = 24
 
 const FAULTRECORDLOG_ADDR = 0x0800
 const ALARMRECORDLOG_ADDR = 0x0918
-const SWITCHCORDLOG_ADDR = 0x0A30
+const SWITCHRECORDLOG_ADDR = 0x0A30
+const MAX_FAULTRECORDLOG_NUM = 20
+const MAX_ALARMRECORDLOG_NUM = 20
+const MAX_SWITCHRECORDLOG_NUM = 30
 const RECORD_LOG_LEN = 14
 
 const TIMER_MONDAY = 0x01
@@ -473,11 +481,18 @@ func GetMinute(strTime string) (uint16, error) {
 	return (nMinute << 8), err
 }
 
-func GetRemoteCtlSetting(Params *RemoteControlParameter) {
-	var strJson string = "{\"TimeOffDay0\":[\"Monday\",\"Sunday\"],\"TimeOffTime0\":\"15:40:34\",\"TimeOnDay0\":[\"Monday\",\"Sunday\"],\"TimeOnTime0\":\"15:41:34\",\"TimeOffDay1\":[\"Monday\",\"Sunday\"],\"TimeOffTime1\":\"15:42:34\",\"TimeOnDay1\":[\"Monday\",\"Sunday\"],\"TimeOnTime1\":\"15:43:34\",\"TimeOffDay2\":[\"Monday\",\"Sunday\"],\"TimeOffTime2\":\"15:44:34\",\"TimeOnDay2\":[\"Monday\",\"Sunday\"],\"TimeOnTime2\":\"15:45:34\",\"TimeOffDay3\":[\"Monday\",\"Sunday\"],\"TimeOffTime3\":\"15:46:34\",\"TimeOnDay3\":[\"Monday\",\"Sunday\"],\"TimeOnTime3\":\"15:47:34\",\"TimeOffDay4\":[\"Monday\",\"Sunday\"],\"TimeOffTime4\":\"15:48:34\",\"TimeOnDay4\":[\"Monday\",\"Sunday\"],\"TimeOnTime4\":\"15:49:34\"}"
+func GetRemoteCtlSetting(jsonfile string, Params *RemoteControlParameter) error {
+	//var strJson string = "{\"TimeOffDay0\":[\"Monday\",\"Sunday\"],\"TimeOffTime0\":\"15:40:34\",\"TimeOnDay0\":[\"Monday\",\"Sunday\"],\"TimeOnTime0\":\"15:41:34\",\"TimeOffDay1\":[\"Monday\",\"Sunday\"],\"TimeOffTime1\":\"15:42:34\",\"TimeOnDay1\":[\"Monday\",\"Sunday\"],\"TimeOnTime1\":\"15:43:34\",\"TimeOffDay2\":[\"Monday\",\"Sunday\"],\"TimeOffTime2\":\"15:44:34\",\"TimeOnDay2\":[\"Monday\",\"Sunday\"],\"TimeOnTime2\":\"15:45:34\",\"TimeOffDay3\":[\"Monday\",\"Sunday\"],\"TimeOffTime3\":\"15:46:34\",\"TimeOnDay3\":[\"Monday\",\"Sunday\"],\"TimeOnTime3\":\"15:47:34\",\"TimeOffDay4\":[\"Monday\",\"Sunday\"],\"TimeOffTime4\":\"15:48:34\",\"TimeOnDay4\":[\"Monday\",\"Sunday\"],\"TimeOnTime4\":\"15:49:34\"}"
+	data, err := ioutil.ReadFile(jsonfile)
+
+	if err != nil {
+		return err
+	}
+
 	jsonMap := make(map[string]interface{})
 
-	json.Unmarshal([]byte(strJson), &jsonMap)
+	//json.Unmarshal([]byte(strJson), &jsonMap)
+	json.Unmarshal(data, &jsonMap)
 
 	//var Params RemoteControlParameter
 	var bAllGroups bool = true
@@ -659,5 +674,5 @@ func GetRemoteCtlSetting(Params *RemoteControlParameter) {
 	if bAllGroups {
 		Params.TimeOffDH0 |= GROUPFULL_FLAG
 	}
-
+	return err
 }
