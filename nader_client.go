@@ -213,8 +213,8 @@ func ReadSummary4(client *ModbusClient) (*Summary4, error) {
 	return &s, nil
 }
 
-func ReadTimerParameters(client *ModbusClient) (*RemoteControlParameter, error) {
-	s := RemoteControlParameter{}
+func ReadTimerParameters(client *ModbusClient) (*TimerControlParameter, error) {
+	s := TimerControlParameter{}
 
 	results, err := client.ReadHoldingRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN)
 	if err != nil {
@@ -238,7 +238,7 @@ func SwitchBreaker(client *ModbusClient, is_on bool) error {
 }
 
 func SetTimerParameters(client *ModbusClient, jsonpath string) error {
-	r := RemoteControlParameter{}
+	r := TimerControlParameter{}
 
 	//for test
 	/*

@@ -8,36 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type (
-	TimerStruct struct {
-		TimeOffDay0  []string
-		TimeOffTime0 string
-		TimeOnDay0   []string
-		TimeOnTime0  string
-		TimeOffDay1  []string
-		TimeOffTime1 string
-		TimeOnDay1   []string
-		TimeOnTime1  string
-		TimeOffDay2  []string
-		TimeOffTime2 string
-		TimeOnDay2   []string
-		TimeOnTime2  string
-		TimeOffDay3  []string
-		TimeOffTime3 string
-		TimeOnDay3   []string
-		TimeOnTime3  string
-		TimeOffDay4  []string
-		TimeOffTime4 string
-		TimeOnDay4   []string
-		TimeOnTime4  string
-	}
-)
-
-func (p *TimerStruct) ToJson() ([]byte, error) {
-
-	return json.Marshal(p)
-}
-
 func TestSomething(t *testing.T) {
 
 	var p = Product{
@@ -75,7 +45,7 @@ func TestSomething(t *testing.T) {
 
 func TestTimerControlStruct(t *testing.T) {
 
-	var myTime = TimerStruct{
+	var myTime = TimerControlJson{
 		TimeOffDay0:  []string{"Monday", "Sunday"},
 		TimeOffTime0: "13:00:34",
 		TimeOnDay0:   []string{"Monday", "Tuesday", "Sunday"},
@@ -106,7 +76,7 @@ func TestTimerControlStruct(t *testing.T) {
 	jsonMap := make(map[string]interface{})
 
 	json.Unmarshal(data, &jsonMap)
-	var Params RemoteControlParameter
+	var Params TimerControlParameter
 	var bAllGroups bool = true
 	//Group 0
 	nDayHour, err1 := GetDayHour(jsonMap["TimeOffDay0"].([]interface{}), jsonMap["TimeOffTime0"].(string))
@@ -228,4 +198,66 @@ func TestTimerControlStruct(t *testing.T) {
 	}
 
 	assert.Equal(t, "abcde", fmt.Sprintf("%v", jsonMap["SerialNumber"]))
+}
+
+func TestTimerControlJson(t *testing.T) {
+
+	var param = TimerControlParameter{
+
+		TimeOffDH0: 0xC015,
+		TimeOffMS0: 0x3500,
+		TimeOnDH0:  0xC015,
+		TimeOnMS0:  0x3600,
+		TimeOffDH1: 0x4015,
+		TimeOffMS1: 0x3700,
+		TimeOnDH1:  0x4015,
+		TimeOnMS1:  0x3800,
+		TimeOffDH2: 0x4015,
+		TimeOffMS2: 0x3900,
+		TimeOnDH2:  0x4015,
+		TimeOnMS2:  0x4000,
+		TimeOffDH3: 0x4015,
+		TimeOffMS3: 0x4100,
+		TimeOnDH3:  0x4015,
+		TimeOnMS3:  0x4200,
+		TimeOffDH4: 0x4015,
+		TimeOffMS4: 0x4300,
+		TimeOnDH4:  0x4015,
+		TimeOnMS4:  0x4400,
+	}
+
+	var TimeJson TimerControlJson
+	TimeJson.TimeOffDay0 = GetDay(param.TimeOffDH0)
+	TimeJson.TimeOffTime0 = GetTime(param.TimeOffDH0, param.TimeOffMS0)
+	TimeJson.TimeOnDay0 = GetDay(param.TimeOnDH0)
+	TimeJson.TimeOnTime0 = GetTime(param.TimeOnDH0, param.TimeOnMS0)
+
+	TimeJson.TimeOffDay1 = GetDay(param.TimeOffDH1)
+	TimeJson.TimeOffTime1 = GetTime(param.TimeOffDH1, param.TimeOffMS1)
+	TimeJson.TimeOnDay1 = GetDay(param.TimeOnDH1)
+	TimeJson.TimeOnTime1 = GetTime(param.TimeOnDH1, param.TimeOnMS1)
+
+	TimeJson.TimeOffDay2 = GetDay(param.TimeOffDH2)
+	TimeJson.TimeOffTime2 = GetTime(param.TimeOffDH2, param.TimeOffMS2)
+	TimeJson.TimeOnDay2 = GetDay(param.TimeOnDH2)
+	TimeJson.TimeOnTime2 = GetTime(param.TimeOnDH2, param.TimeOnMS2)
+
+	TimeJson.TimeOffDay3 = GetDay(param.TimeOffDH3)
+	TimeJson.TimeOffTime3 = GetTime(param.TimeOffDH3, param.TimeOffMS3)
+	TimeJson.TimeOnDay3 = GetDay(param.TimeOnDH3)
+	TimeJson.TimeOnTime3 = GetTime(param.TimeOnDH3, param.TimeOnMS3)
+
+	TimeJson.TimeOffDay4 = GetDay(param.TimeOffDH4)
+	TimeJson.TimeOffTime4 = GetTime(param.TimeOffDH4, param.TimeOffMS4)
+	TimeJson.TimeOnDay4 = GetDay(param.TimeOnDH4)
+	TimeJson.TimeOnTime4 = GetTime(param.TimeOnDH4, param.TimeOnMS4)
+
+	data, err := TimeJson.ToJson()
+	if err != nil {
+		t.Error()
+	}
+
+	jsonMap := make(map[string]interface{})
+	json.Unmarshal(data, &jsonMap)
+
 }

@@ -244,14 +244,7 @@ type (
 		FaultMinuteSecond     uint16
 	}
 
-	RemoteControlParameter struct {
-		//OperateCmd      uint16
-		//_               uint16
-		//_               uint16
-		//_               uint16
-		//_               uint16
-		//_               uint16
-		//_               uint16
+	TimerControlParameter struct {
 		TimeOffDH0 uint16
 		TimeOffMS0 uint16
 		TimeOnDH0  uint16
@@ -272,15 +265,29 @@ type (
 		TimeOffMS4 uint16
 		TimeOnDH4  uint16
 		TimeOnMS4  uint16
-		//_               uint16
-		//_               uint16
-		//_               uint16
-		//_               uint16
-		//OneKeySwitch    uint16
-		//SwitchRegister1 uint16
-		//SwitchRegister2 uint16
-		//SwitchRegister3 uint16
-		//SwitchRegister4 uint16
+	}
+
+	TimerControlJson struct {
+		TimeOffDay0  []string
+		TimeOffTime0 string
+		TimeOnDay0   []string
+		TimeOnTime0  string
+		TimeOffDay1  []string
+		TimeOffTime1 string
+		TimeOnDay1   []string
+		TimeOnTime1  string
+		TimeOffDay2  []string
+		TimeOffTime2 string
+		TimeOnDay2   []string
+		TimeOnTime2  string
+		TimeOffDay3  []string
+		TimeOffTime3 string
+		TimeOnDay3   []string
+		TimeOnTime3  string
+		TimeOffDay4  []string
+		TimeOffTime4 string
+		TimeOnDay4   []string
+		TimeOnTime4  string
 	}
 
 	RecordLogs struct {
@@ -376,7 +383,37 @@ func (p *Record) ToJson() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-func (p *RemoteControlParameter) ToJson() ([]byte, error) {
+func (p *TimerControlParameter) ToJson() ([]byte, error) {
+
+	var TimeJson TimerControlJson
+	TimeJson.TimeOffDay0 = GetDay(p.TimeOffDH0)
+	TimeJson.TimeOffTime0 = GetTime(p.TimeOffDH0, p.TimeOffMS0)
+	TimeJson.TimeOnDay0 = GetDay(p.TimeOnDH0)
+	TimeJson.TimeOnTime0 = GetTime(p.TimeOnDH0, p.TimeOnMS0)
+
+	TimeJson.TimeOffDay1 = GetDay(p.TimeOffDH1)
+	TimeJson.TimeOffTime1 = GetTime(p.TimeOffDH1, p.TimeOffMS1)
+	TimeJson.TimeOnDay1 = GetDay(p.TimeOnDH1)
+	TimeJson.TimeOnTime1 = GetTime(p.TimeOnDH1, p.TimeOnMS1)
+
+	TimeJson.TimeOffDay2 = GetDay(p.TimeOffDH2)
+	TimeJson.TimeOffTime2 = GetTime(p.TimeOffDH2, p.TimeOffMS2)
+	TimeJson.TimeOnDay2 = GetDay(p.TimeOnDH2)
+	TimeJson.TimeOnTime2 = GetTime(p.TimeOnDH2, p.TimeOnMS2)
+
+	TimeJson.TimeOffDay3 = GetDay(p.TimeOffDH3)
+	TimeJson.TimeOffTime3 = GetTime(p.TimeOffDH3, p.TimeOffMS3)
+	TimeJson.TimeOnDay3 = GetDay(p.TimeOnDH3)
+	TimeJson.TimeOnTime3 = GetTime(p.TimeOnDH3, p.TimeOnMS3)
+
+	TimeJson.TimeOffDay4 = GetDay(p.TimeOffDH4)
+	TimeJson.TimeOffTime4 = GetTime(p.TimeOffDH4, p.TimeOffMS4)
+	TimeJson.TimeOnDay4 = GetDay(p.TimeOnDH4)
+	TimeJson.TimeOnTime4 = GetTime(p.TimeOnDH4, p.TimeOnMS4)
+	return json.Marshal(TimeJson)
+}
+
+func (p *TimerControlJson) ToJson() ([]byte, error) {
 
 	return json.Marshal(p)
 }
@@ -436,6 +473,11 @@ func UintToBCD(data uint16) uint16 {
 	return (((data & 0x3f) / 10) << 4) | ((data & 0x3f) % 10)
 }
 
+func BCDToUint(data uint16) uint16 {
+
+	return ((data>>4)*10 + (data & 0x0f))
+}
+
 func GetDayHour(arrDay []interface{}, strTime string) (uint16, error) {
 	mapDays := map[string]uint16{
 		"Monday":    TIMER_MONDAY,
@@ -481,7 +523,42 @@ func GetMinute(strTime string) (uint16, error) {
 	return (nMinute << 8), err
 }
 
-func GetRemoteCtlSetting(jsonfile string, Params *RemoteControlParameter) error {
+func GetDay(DayHour uint16) []string {
+	mapDays := map[uint16]string{
+		0: "Monday",
+		1: "Tuesday",
+		2: "Wednesday",
+		3: "Thursday",
+		4: "Firday",
+		5: "Saturday",
+		6: "Sunday",
+	}
+
+	days := (DayHour >> 8) & 0x7F
+
+	buf := make([]string, 0, 7)
+
+	for i := uint16(0); i < 7; i++ {
+		if (days & 0x1) != 0 {
+			buf = append(buf, mapDays[i])
+		}
+		days >>= 1
+	}
+	return buf
+}
+
+func GetTime(DayHour uint16, Minute uint16) string {
+	hour := DayHour & 0xFF
+	min := (Minute >> 8) & 0xFF
+
+	if hour > 0x23 || min > 0x59 {
+		return ""
+	}
+
+	return fmt.Sprintf("%02d:%02d:%02d", BCDToUint(hour), BCDToUint(min), 0)
+}
+
+func GetRemoteCtlSetting(jsonfile string, Params *TimerControlParameter) error {
 	//var strJson string = "{\"TimeOffDay0\":[\"Monday\",\"Sunday\"],\"TimeOffTime0\":\"15:40:34\",\"TimeOnDay0\":[\"Monday\",\"Sunday\"],\"TimeOnTime0\":\"15:41:34\",\"TimeOffDay1\":[\"Monday\",\"Sunday\"],\"TimeOffTime1\":\"15:42:34\",\"TimeOnDay1\":[\"Monday\",\"Sunday\"],\"TimeOnTime1\":\"15:43:34\",\"TimeOffDay2\":[\"Monday\",\"Sunday\"],\"TimeOffTime2\":\"15:44:34\",\"TimeOnDay2\":[\"Monday\",\"Sunday\"],\"TimeOnTime2\":\"15:45:34\",\"TimeOffDay3\":[\"Monday\",\"Sunday\"],\"TimeOffTime3\":\"15:46:34\",\"TimeOnDay3\":[\"Monday\",\"Sunday\"],\"TimeOnTime3\":\"15:47:34\",\"TimeOffDay4\":[\"Monday\",\"Sunday\"],\"TimeOffTime4\":\"15:48:34\",\"TimeOnDay4\":[\"Monday\",\"Sunday\"],\"TimeOnTime4\":\"15:49:34\"}"
 	data, err := ioutil.ReadFile(jsonfile)
 
@@ -494,7 +571,7 @@ func GetRemoteCtlSetting(jsonfile string, Params *RemoteControlParameter) error 
 	//json.Unmarshal([]byte(strJson), &jsonMap)
 	json.Unmarshal(data, &jsonMap)
 
-	//var Params RemoteControlParameter
+	//var Params TimerControlParameter
 	var bAllGroups bool = true
 	//Group 0
 	if jsonMap["TimeOffDay0"] != nil {
