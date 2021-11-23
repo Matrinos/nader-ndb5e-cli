@@ -240,6 +240,10 @@ func SwitchBreaker(client *ModbusClient, is_on bool) error {
 func SetTimerParameters(client *ModbusClient, jsonpath string) error {
 	r := TimerControlParameter{}
 
+	err := GetRemoteCtlSetting(jsonpath, &r)
+	if err != nil {
+		return err
+	}
 	//for test
 	/*
 		var w uint16 = TIMER_SUNDAY << 8 //week sunday
@@ -267,7 +271,7 @@ func SetTimerParameters(client *ModbusClient, jsonpath string) error {
 		r.TimeOffDH3 = w | h
 		r.TimeOffMS3 = 0x0600
 
-		r.TimeOnDH3 = w | h2
+		r.TimeOnDH3 = w | h
 		r.TimeOnMS3 = t + 0x0700
 
 		r.TimeOnDH4 = w | h
@@ -276,11 +280,6 @@ func SetTimerParameters(client *ModbusClient, jsonpath string) error {
 		r.TimeOffDH4 = w | h
 		r.TimeOffMS4 = t + 0x0900
 	*/
-	err := GetRemoteCtlSetting(jsonpath, &r)
-	if err != nil {
-		return err
-	}
-
 	buf := new(bytes.Buffer)
 	err = binary.Write(buf, binary.BigEndian, &r)
 	if err != nil {
