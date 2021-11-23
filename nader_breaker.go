@@ -749,6 +749,7 @@ func GetRemoteCtlSetting(jsonfile string, Params *TimerControlParameter) error {
 	}
 
 	if bAllGroups {
+		// TODO: need check with vendor to know the mearning of this bit
 		//Params.TimeOffDH0 |= GROUPFULL_FLAG  //? sometimes exception error happans when set 15bit as 1, illegal data.
 	}
 	return err
