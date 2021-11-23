@@ -213,7 +213,7 @@ func ReadSummary4(client *ModbusClient) (*Summary4, error) {
 	return &s, nil
 }
 
-func ReadRemoteCmd(client *ModbusClient) (*RemoteControlParameter, error) {
+func ReadTimerParameters(client *ModbusClient) (*RemoteControlParameter, error) {
 	s := RemoteControlParameter{}
 
 	results, err := client.ReadHoldingRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN)
@@ -237,7 +237,7 @@ func SwitchBreaker(client *ModbusClient, is_on bool) error {
 	return client.WriteSingleRegister(0x0400, 0xff00)
 }
 
-func SetTimerToSwitch(client *ModbusClient, jsonpath string) error {
+func SetTimerParameters(client *ModbusClient, jsonpath string) error {
 	r := RemoteControlParameter{}
 
 	//for test
@@ -277,6 +277,9 @@ func SetTimerToSwitch(client *ModbusClient, jsonpath string) error {
 		r.TimeOffMS4 = t + 0x0900
 	*/
 	err := GetRemoteCtlSetting(jsonpath, &r)
+	if err != nil {
+		return err
+	}
 
 	buf := new(bytes.Buffer)
 	err = binary.Write(buf, binary.BigEndian, &r)

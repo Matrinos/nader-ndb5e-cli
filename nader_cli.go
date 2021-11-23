@@ -77,10 +77,16 @@ func main() {
 				},
 			},
 			{
-				Name:    "setTimerToSwitch",
+				Name:    "timerparameters",
+				Aliases: []string{"tp"},
+				Usage:   "Timer parameters",
+				Action:  readTimerParameters,
+			},
+			{
+				Name:    "settimerparameters",
 				Aliases: []string{"st"},
 				Usage:   "Json file path --jsonpath=file",
-				Action:  setTimerToSwitch,
+				Action:  setTimerParameters,
 				Flags: []cli.Flag{
 					&cli.StringFlag{Name: "jsonpath", Usage: "--jsonpath"},
 				},
@@ -182,7 +188,7 @@ func turnOn(c *cli.Context) error {
 	return SwitchBreaker(client, true)
 }
 
-func setTimerToSwitch(c *cli.Context) error {
+func setTimerParameters(c *cli.Context) error {
 	Logger.Println("set Timers to control switch")
 	client, err := openConnection(c)
 	defer client.CloseConnection()
@@ -193,7 +199,7 @@ func setTimerToSwitch(c *cli.Context) error {
 
 	jsonpath := c.String("jsonpath")
 
-	return SetTimerToSwitch(client, jsonpath)
+	return SetTimerParameters(client, jsonpath)
 }
 
 func readData(c *cli.Context) error {
@@ -233,7 +239,7 @@ func readLogs(c *cli.Context) error {
 	} else if logtype == SWITCH_TYPE && logindex < MAX_SWITCHRECORDLOG_NUM {
 		addr = (SWITCHRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
 	} else {
-
+		return err
 	}
 	data, err := ReadLogs(client, addr)
 	if err != nil {
@@ -409,7 +415,7 @@ func readRunStatus(c *cli.Context) error {
 	return outputData(data)
 }
 
-func readRemoteCmd(c *cli.Context) error {
+func readTimerParameters(c *cli.Context) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()
 	if err != nil {
@@ -417,7 +423,7 @@ func readRemoteCmd(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadRemoteCmd(client)
+	data, err := ReadTimerParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
