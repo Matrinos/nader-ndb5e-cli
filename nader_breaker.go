@@ -577,9 +577,9 @@ func GetDay(DayHour uint16) []string {
 
 func GetDate(YearMonth uint16, DayHour uint16) string {
 
-	year := UintToBCD(YearMonth >> 8)
-	month := UintToBCD(YearMonth & 0xFF)
-	Hour := UintToBCD(DayHour >> 8)
+	year := BCDToUint(YearMonth >> 8)
+	month := BCDToUint(YearMonth & 0xFF)
+	Hour := BCDToUint(DayHour >> 8)
 	return fmt.Sprintf("20%02d-%02d-%02d", year, month, Hour)
 }
 
