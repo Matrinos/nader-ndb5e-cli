@@ -133,10 +133,10 @@ func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	return &p, nil
 }
 
-func ReadRecord(client *ModbusClient, record uint16) (*Record, error) {
+func ReadRecord(client *ModbusClient, addr uint16) (*Record, error) {
 	r := Record{}
 
-	results, err := client.ReadHoldingRegisters(record, RECORD_INFO_LEN)
+	results, err := client.ReadHoldingRegisters(addr, RECORD_INFO_LEN)
 	if err != nil {
 		return &r, err
 	}
@@ -235,6 +235,11 @@ func SwitchBreaker(client *ModbusClient, is_on bool) error {
 	}
 
 	return client.WriteSingleRegister(0x0400, 0xff00)
+}
+
+func SetRecordNo(client *ModbusClient, addr uint16, num uint16) error {
+
+	return client.WriteSingleRegister(addr, num)
 }
 
 func SetTimerParameters(client *ModbusClient, jsonpath string) error {

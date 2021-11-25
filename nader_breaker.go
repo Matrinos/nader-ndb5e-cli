@@ -16,8 +16,11 @@ const MANUFACTURE_DATE = "ManufactureDate"
 
 const FAULTRECORD_ADDR = 0x340
 const ALARMRECORD_ADDR = 0x350
-const SWITCHRECORD_ADDR = 360
+const SWITCHRECORD_ADDR = 0x360
 const RECORD_INFO_LEN = 16
+const FAULTRECORD_NUM_ADDR = 0x341
+const ALARMRECORD_NUM_ADDR = 0x351
+const SWITCHRECORD_NUM_ADDR = 0x361
 
 const FAULT_TYPE = 0
 const ALARM_TYPE = 1
@@ -226,22 +229,33 @@ type (
 	}
 
 	Record struct {
-		FaultRecord           uint16
-		FaultReadNo           uint16
-		FaultCategory         uint16
-		_                     uint16
-		FaultRecordParameter1 uint16
-		_                     uint16
-		_                     uint16
-		_                     uint16
-		_                     uint16
-		_                     uint16
-		_                     uint16
-		_                     uint16
-		_                     uint16
-		FaultYearMonth        uint16
-		FaultDayHour          uint16
-		FaultMinuteSecond     uint16
+		Record       uint16
+		ReadNo       uint16
+		Category     uint16
+		_            uint16
+		RecordParams uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		YearMonth    uint16
+		DayHour      uint16
+		MinuteSecond uint16
+	}
+
+	RecordJson struct {
+		Record       uint16
+		RecordNo     uint16
+		RecordType   uint16
+		RecordCode   uint16
+		RecordParams uint16
+		Description  string
+		Date         string
+		Time         string
 	}
 
 	TimerControlParameter struct {
@@ -380,7 +394,21 @@ func (p *ProtectParameters) ToJson() ([]byte, error) {
 
 func (p *Record) ToJson() ([]byte, error) {
 
-	return json.Marshal(p)
+	rJson := RecordJson{}
+
+	recordType := (p.Category >> 5) & 0x7
+	recordCode := (p.Category & 0x1F)
+
+	rJson.Record = p.Record
+	rJson.RecordNo = p.ReadNo
+	rJson.RecordCode = recordCode
+	rJson.RecordType = recordType
+	rJson.RecordParams = p.RecordParams
+	rJson.Description = GetRecordDescription(p)
+	rJson.Date = GetDate(p.YearMonth, p.DayHour)
+	rJson.Time = GetTime(p.DayHour, p.MinuteSecond)
+
+	return json.Marshal(rJson)
 }
 
 func (p *TimerControlParameter) ToJson() ([]byte, error) {
@@ -547,15 +575,24 @@ func GetDay(DayHour uint16) []string {
 	return buf
 }
 
-func GetTime(DayHour uint16, Minute uint16) string {
+func GetDate(YearMonth uint16, DayHour uint16) string {
+
+	year := UintToBCD(YearMonth >> 8)
+	month := UintToBCD(YearMonth & 0xFF)
+	Hour := UintToBCD(DayHour >> 8)
+	return fmt.Sprintf("20%02d-%02d-%02d", year, month, Hour)
+}
+
+func GetTime(DayHour uint16, MinuteSecond uint16) string {
 	hour := DayHour & 0xFF
-	min := (Minute >> 8) & 0xFF
+	min := (MinuteSecond >> 8) & 0xFF
+	second := MinuteSecond & 0xFF
 
 	if hour > 0x23 || min > 0x59 {
 		return ""
 	}
 
-	return fmt.Sprintf("%02d:%02d:%02d", BCDToUint(hour), BCDToUint(min), 0)
+	return fmt.Sprintf("%02d:%02d:%02d", BCDToUint(hour), BCDToUint(min), BCDToUint(second))
 }
 
 func GetRemoteCtlSetting(jsonfile string, Params *TimerControlParameter) error {
@@ -753,4 +790,87 @@ func GetRemoteCtlSetting(jsonfile string, Params *TimerControlParameter) error {
 		//Params.TimeOffDH0 |= GROUPFULL_FLAG  //? sometimes exception error happans when set 15bit as 1, illegal data.
 	}
 	return err
+}
+
+func GetRecordDescription(p *Record) string {
+	mapFaultCode := map[uint16]string{
+		2:  "漏电故障",     //00010-漏电故障
+		5:  "过载长延时",    //00101-过载长延时
+		6:  "瞬时",       //00110-瞬时
+		7:  "缺相",       //00111-缺相
+		8:  "欠压",       //01000-欠压
+		9:  "过压",       //01001-过压
+		12: "相序",       //01100-相序
+		26: "IU 电流不平衡", //11010-IU 电流不平衡
+		27: "功率需用值保护",  //11011-功率需用值保护
+		30: "温度保护",     //11110-温度保护
+	}
+
+	mapAlarmCode := map[uint16]string{
+		1:  "漏电自检",     //00001-漏电自检
+		3:  "功率需用值预报警", //00011-功率需用值预报警
+		21: "过载预报警",    //10101-过载预报警
+		31: "温度预报警",    //11111-温度预报警
+	}
+
+	mapCauseCode := map[uint16]string{
+		1:  "漏电自检",     //00001-漏电自检
+		2:  "漏电故障",     //00010-漏电故障
+		5:  "过载长延时",    //00101-过载长延时
+		6:  "瞬时",       //00110-瞬时
+		7:  "缺相",       //00111-缺相
+		8:  "欠压",       //01000-欠压
+		9:  "过压",       //01001-过压
+		12: "相序",       //01100-相序
+		18: "手动分/合闸",   //10010-手动分/合闸
+		20: "定时分/合闸",   //10100-定时分/合闸
+		24: "重合闸",      //11000-重合闸
+		25: "打火(预留)",   //11001-打火(预留)
+		26: "IU 电流不平衡", //11010-IU 电流不平衡
+		27: "功率需用值保护",  //11011-功率需用值保护
+		29: "远程分/合闸",   //11101-远程分/合闸
+		30: "温度保护",     //11110-温度保护
+
+	}
+
+	Description := string("")
+	recordType := (p.Category >> 5) & 0x7
+	recordCode := (p.Category & 0x1F)
+
+	if recordType == FAULT_TYPE {
+		v, ok := mapFaultCode[recordCode]
+		if ok {
+			Description = fmt.Sprintf("故障记录第%d条: %s", p.ReadNo, v)
+		} else {
+			Description = fmt.Sprintf("故障记录第%d条: 故障不明", p.ReadNo)
+		}
+	} else if recordType == ALARM_TYPE {
+		v, ok := mapAlarmCode[recordCode]
+		if ok {
+			Description = fmt.Sprintf("报警记录第%d条: %s", p.ReadNo, v)
+		} else {
+			Description = fmt.Sprintf("报警记录第%d条: 报警不明", p.ReadNo)
+		}
+	} else if recordType == SWITCH_TYPE {
+		causeCode := (p.RecordParams & 0x1F)
+		status := (p.RecordParams >> 5) & 0x1
+		statusStr := string("成功")
+		if status == 0 {
+			statusStr = string("失败")
+		}
+		if recordCode == 0x1 { //switch on
+			Description = fmt.Sprintf("变位记录第%d条: 合闸, 变位%s", p.ReadNo, statusStr)
+		} else if recordCode == 0x2 { //switch off
+			v, ok := mapCauseCode[causeCode]
+			if ok {
+				Description = fmt.Sprintf("变位记录第%d条: 分闸, 变位%s, 分闸原因:%s", p.ReadNo, statusStr, v)
+			} else {
+				Description = fmt.Sprintf("变位记录第%d条: 分闸, 变位%s, 分闸原因不明", p.ReadNo, statusStr)
+			}
+		}
+
+	} else {
+		return string("")
+	}
+	return Description
 }

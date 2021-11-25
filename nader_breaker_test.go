@@ -261,3 +261,27 @@ func TestTimerControlJson(t *testing.T) {
 	json.Unmarshal(data, &jsonMap)
 
 }
+
+func TestRecord(t *testing.T) {
+
+	var p = Record{
+		Record:       0xa,
+		ReadNo:       0xa,
+		Category:     0x2,
+		RecordParams: 0xca,
+		YearMonth:    0x1,
+		DayHour:      0x100,
+		MinuteSecond: 0x57,
+	}
+
+	data, err := p.ToJson()
+	if err != nil {
+		t.Error()
+	}
+
+	jsonMap := make(map[string]interface{})
+	json.Unmarshal(data, &jsonMap)
+
+	assert.Equal(t, "00210610", jsonMap[MANUFACTURE_DATE], "they should be equal")
+	assert.Equal(t, "abcde", fmt.Sprintf("%v", jsonMap["SerialNumber"]))
+}

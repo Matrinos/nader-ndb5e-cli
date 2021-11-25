@@ -68,9 +68,19 @@ func main() {
 				Action:  readProtectParameters,
 			},
 			{
-				Name:    "record",
-				Aliases: []string{"re"},
-				Usage:   "readRecord --recordtype=type, Record information",
+				Name:    "setrecordnum",
+				Aliases: []string{"sr"},
+				Usage:   "setRecordNumber --recordtype=type, Record type --recordnum Record No.",
+				Action:  setRecordNumber,
+				Flags: []cli.Flag{
+					&cli.IntFlag{Name: "recordtype", Usage: "--recordtype"},
+					&cli.IntFlag{Name: "recordnum", Usage: "--recordnum"},
+				},
+			},
+			{
+				Name:    "readrecord",
+				Aliases: []string{"rr"},
+				Usage:   "record data",
 				Action:  readRecord,
 				Flags: []cli.Flag{
 					&cli.IntFlag{Name: "recordtype", Usage: "--recordtype"},
@@ -264,6 +274,27 @@ func readProtectParameters(c *cli.Context) error {
 	return outputData(data)
 }
 
+func setRecordNumber(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	recordtype := c.Int("recordtype")
+	recordnum := uint16(c.Int("recordnum"))
+	if recordtype == FAULT_TYPE {
+		return SetRecordNo(client, FAULTRECORD_NUM_ADDR, recordnum)
+	} else if recordtype == ALARM_TYPE {
+		return SetRecordNo(client, ALARMRECORD_NUM_ADDR, recordnum)
+	} else if recordtype == SWITCH_TYPE {
+		return SetRecordNo(client, SWITCHRECORD_NUM_ADDR, recordnum)
+	}
+
+	return err
+}
+
 func readRecord(c *cli.Context) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()
@@ -272,13 +303,14 @@ func readRecord(c *cli.Context) error {
 		return err
 	}
 
+	recordtype := c.Int("recordtype")
 	var addr uint16 = 0
-	recodetype := c.Int("recodetype")
-	if recodetype == FAULT_TYPE {
+
+	if recordtype == FAULT_TYPE {
 		addr = FAULTRECORD_ADDR
-	} else if recodetype == ALARM_TYPE {
+	} else if recordtype == ALARM_TYPE {
 		addr = ALARMRECORD_ADDR
-	} else if recodetype == SWITCH_TYPE {
+	} else if recordtype == SWITCH_TYPE {
 		addr = SWITCHRECORD_ADDR
 	} else {
 		return err
