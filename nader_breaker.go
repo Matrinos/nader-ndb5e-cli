@@ -60,6 +60,7 @@ const MAX_FAULTRECORDLOG_NUM = 20
 const MAX_ALARMRECORDLOG_NUM = 20
 const MAX_SWITCHRECORDLOG_NUM = 30
 const RECORD_LOG_LEN = 14
+const LOGSINGROUP_NUM = 5
 
 const TIMER_MONDAY = 0x01
 const TIMER_TUESDAY = TIMER_MONDAY << 1
@@ -304,8 +305,26 @@ type (
 		TimeOnTime4  string
 	}
 
+	RecordLogsInfo struct {
+		LogNo   uint16
+		LogType uint16
+		Logs    RecordLogs
+	}
 	RecordLogs struct {
-		Log [14]uint16
+		LogRecord    uint16
+		_            uint16
+		LogParams    uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		_            uint16
+		YearMonth    uint16
+		DayHour      uint16
+		MinuteSecond uint16
 	}
 
 	Summary1 struct {
@@ -404,7 +423,7 @@ func (p *Record) ToJson() ([]byte, error) {
 	rJson.RecordCode = recordCode
 	rJson.RecordType = recordType
 	rJson.RecordParams = p.RecordParams
-	rJson.Description = GetRecordDescription(p)
+	rJson.Description = GetRecordDescription(p.ReadNo, recordType, recordCode, p.RecordParams)
 	rJson.Date = GetDate(p.YearMonth, p.DayHour)
 	rJson.Time = GetTime(p.DayHour, p.MinuteSecond)
 
@@ -466,9 +485,26 @@ func (p *Summary4) ToJson() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-func (p *RecordLogs) ToJson() ([]byte, error) {
+func (p *RecordLogsInfo) ToJson() ([]byte, error) {
 
-	return json.Marshal(p)
+	rJson := RecordJson{}
+
+	LogNo := p.LogNo
+	LogType := p.LogType
+	LogNum := ((p.Logs.LogRecord >> 8) & 0xFF)
+	LogCode := (p.Logs.LogRecord & 0xFF)
+	LogParams := p.Logs.LogParams
+
+	rJson.Record = LogNum
+	rJson.RecordNo = LogNo
+	rJson.RecordCode = LogCode
+	rJson.RecordType = LogType
+	rJson.RecordParams = LogParams
+	rJson.Description = GetRecordDescription(LogNo, LogType, LogCode, LogParams)
+	rJson.Date = GetDate(p.Logs.YearMonth, p.Logs.DayHour)
+	rJson.Time = GetTime(p.Logs.DayHour, p.Logs.MinuteSecond)
+
+	return json.Marshal(rJson)
 }
 
 func (d *MetricalData) ToJson() ([]byte, error) {
@@ -792,7 +828,7 @@ func GetRemoteCtlSetting(jsonfile string, Params *TimerControlParameter) error {
 	return err
 }
 
-func GetRecordDescription(p *Record) string {
+func GetRecordDescription(RecordNo uint16, RecordType uint16, RecordCode uint16, RecordParams uint16) string {
 	mapFaultCode := map[uint16]string{
 		2:  "漏电故障",     //00010-漏电故障
 		5:  "过载长延时",    //00101-过载长延时
@@ -834,38 +870,36 @@ func GetRecordDescription(p *Record) string {
 	}
 
 	Description := string("")
-	recordType := (p.Category >> 5) & 0x7
-	recordCode := (p.Category & 0x1F)
 
-	if recordType == FAULT_TYPE {
-		v, ok := mapFaultCode[recordCode]
+	if RecordType == FAULT_TYPE {
+		v, ok := mapFaultCode[RecordCode]
 		if ok {
-			Description = fmt.Sprintf("故障记录第%d条: %s", p.ReadNo, v)
+			Description = fmt.Sprintf("故障记录第%d条: %s", RecordNo, v)
 		} else {
-			Description = fmt.Sprintf("故障记录第%d条: 故障不明", p.ReadNo)
+			Description = fmt.Sprintf("故障记录第%d条: 故障不明", RecordNo)
 		}
-	} else if recordType == ALARM_TYPE {
-		v, ok := mapAlarmCode[recordCode]
+	} else if RecordType == ALARM_TYPE {
+		v, ok := mapAlarmCode[RecordCode]
 		if ok {
-			Description = fmt.Sprintf("报警记录第%d条: %s", p.ReadNo, v)
+			Description = fmt.Sprintf("报警记录第%d条: %s", RecordNo, v)
 		} else {
-			Description = fmt.Sprintf("报警记录第%d条: 报警不明", p.ReadNo)
+			Description = fmt.Sprintf("报警记录第%d条: 报警不明", RecordNo)
 		}
-	} else if recordType == SWITCH_TYPE {
-		causeCode := (p.RecordParams & 0x1F)
-		status := (p.RecordParams >> 5) & 0x1
+	} else if RecordType == SWITCH_TYPE {
+		causeCode := (RecordParams & 0x1F)
+		status := (RecordParams >> 5) & 0x1
 		statusStr := string("成功")
 		if status == 0 {
 			statusStr = string("失败")
 		}
-		if recordCode == 0x1 { //switch on
-			Description = fmt.Sprintf("变位记录第%d条: 合闸, 变位%s", p.ReadNo, statusStr)
-		} else if recordCode == 0x2 { //switch off
+		if RecordCode == 0x1 { //switch on
+			Description = fmt.Sprintf("变位记录第%d条: 合闸, 变位%s", RecordNo, statusStr)
+		} else if RecordCode == 0x2 { //switch off
 			v, ok := mapCauseCode[causeCode]
 			if ok {
-				Description = fmt.Sprintf("变位记录第%d条: 分闸, 变位%s, 分闸原因:%s", p.ReadNo, statusStr, v)
+				Description = fmt.Sprintf("变位记录第%d条: 分闸, 变位%s, 分闸原因:%s", RecordNo, statusStr, v)
 			} else {
-				Description = fmt.Sprintf("变位记录第%d条: 分闸, 变位%s, 分闸原因不明", p.ReadNo, statusStr)
+				Description = fmt.Sprintf("变位记录第%d条: 分闸, 变位%s, 分闸原因不明", RecordNo, statusStr)
 			}
 		}
 

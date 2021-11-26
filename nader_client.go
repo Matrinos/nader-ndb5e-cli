@@ -101,15 +101,15 @@ func ReadData(client *ModbusClient) (*MetricalData, error) {
 	return &d, nil
 }
 
-func ReadLogs(client *ModbusClient, addr uint16) (*RecordLogs, error) {
-	l := RecordLogs{}
+func ReadLogs(client *ModbusClient, addr uint16) (*RecordLogsInfo, error) {
+	l := RecordLogsInfo{}
 
 	results, err := client.ReadHoldingRegisters(addr, RECORD_LOG_LEN)
 	if err != nil {
 		return &l, err
 	}
 
-	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &l)
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &l.Logs)
 	if err != nil {
 		return &l, err
 	}

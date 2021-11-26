@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/urfave/cli/v2"
 )
@@ -140,7 +141,6 @@ func main() {
 				Action:  readLogs,
 				Flags: []cli.Flag{
 					&cli.IntFlag{Name: "logtype", Usage: "--logtype"},
-					&cli.IntFlag{Name: "logindex", Usage: "--logindex"},
 				},
 			},
 		},
@@ -227,6 +227,26 @@ func readData(c *cli.Context) error {
 }
 
 func readLogs(c *cli.Context) error {
+	err := error(nil)
+	var GroupNum uint16 = 0
+	logType := uint16(c.Int("logtype"))
+
+	if logType == FAULT_TYPE {
+		GroupNum = (MAX_FAULTRECORDLOG_NUM / LOGSINGROUP_NUM)
+	} else if logType == ALARM_TYPE {
+		GroupNum = (MAX_ALARMRECORDLOG_NUM / LOGSINGROUP_NUM)
+	} else if logType == SWITCH_TYPE {
+		GroupNum = (MAX_SWITCHRECORDLOG_NUM / LOGSINGROUP_NUM)
+	}
+
+	for GroupID := uint16(0); GroupID < GroupNum; GroupID++ {
+		readLogGroup(c, GroupID)
+	}
+
+	return err
+}
+
+func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()
 	if err != nil {
@@ -235,26 +255,33 @@ func readLogs(c *cli.Context) error {
 	}
 
 	var addr uint16 = 0
-	logtype := uint16(c.Int("logtype"))
-	logindex := uint16(c.Int("logindex"))
+	logType := uint16(c.Int("logtype"))
 
-	if logtype == FAULT_TYPE && logindex < MAX_FAULTRECORDLOG_NUM {
-		addr = (FAULTRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
+	for index := uint16(0); index < LOGSINGROUP_NUM; index++ {
+		logIndex := GroupIndex*LOGSINGROUP_NUM + index
+		if logType == FAULT_TYPE {
+			addr = (FAULTRECORDLOG_ADDR + logIndex*RECORD_LOG_LEN)
+		} else if logType == ALARM_TYPE {
+			addr = (ALARMRECORDLOG_ADDR + logIndex)
+		} else if logType == SWITCH_TYPE {
+			addr = (SWITCHRECORDLOG_ADDR + logIndex)
+		} else {
+			return err
+		}
+		data, err := ReadLogs(client, addr)
+		if err != nil {
+			Logger.Fatal(err)
+			return err
+		}
 
-	} else if logtype == ALARM_TYPE && logindex < MAX_ALARMRECORDLOG_NUM {
-		addr = (ALARMRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
-	} else if logtype == SWITCH_TYPE && logindex < MAX_SWITCHRECORDLOG_NUM {
-		addr = (SWITCHRECORDLOG_ADDR + logindex*RECORD_LOG_LEN)
-	} else {
-		return err
+		data.LogNo = logIndex
+		data.LogType = logType
+
+		err = outputData(data)
+		time.Sleep(2000)
 	}
-	data, err := ReadLogs(client, addr)
-	if err != nil {
-		Logger.Fatal(err)
-		return err
-	}
 
-	return outputData(data)
+	return err
 }
 
 func readProtectParameters(c *cli.Context) error {
