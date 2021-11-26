@@ -492,7 +492,7 @@ func (p *RecordLogsInfo) ToJson() ([]byte, error) {
 	LogNo := p.LogNo
 	LogType := p.LogType
 	LogNum := ((p.Logs.LogRecord >> 8) & 0xFF)
-	LogCode := (p.Logs.LogRecord & 0xFF)
+	LogCode := (p.Logs.LogRecord & 0x1F)
 	LogParams := p.Logs.LogParams
 
 	rJson.Record = LogNum

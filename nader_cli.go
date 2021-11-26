@@ -262,9 +262,9 @@ func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 		if logType == FAULT_TYPE {
 			addr = (FAULTRECORDLOG_ADDR + logIndex*RECORD_LOG_LEN)
 		} else if logType == ALARM_TYPE {
-			addr = (ALARMRECORDLOG_ADDR + logIndex)
+			addr = (ALARMRECORDLOG_ADDR + logIndex*RECORD_LOG_LEN)
 		} else if logType == SWITCH_TYPE {
-			addr = (SWITCHRECORDLOG_ADDR + logIndex)
+			addr = (SWITCHRECORDLOG_ADDR + logIndex*RECORD_LOG_LEN)
 		} else {
 			return err
 		}
@@ -274,11 +274,11 @@ func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 			return err
 		}
 
-		data.LogNo = logIndex
+		data.LogNo = logIndex + 1
 		data.LogType = logType
 
 		err = outputData(data)
-		time.Sleep(2000)
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	return err
