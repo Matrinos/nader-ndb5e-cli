@@ -101,15 +101,15 @@ func ReadData(client *ModbusClient) (*MetricalData, error) {
 	return &d, nil
 }
 
-func ReadLogs1(client *ModbusClient) (*RecordLogs, error) {
-	l := RecordLogs{}
+func ReadLogs(client *ModbusClient, addr uint16) (*RecordLogsInfo, error) {
+	l := RecordLogsInfo{}
 
-	results, err := client.ReadHoldingRegisters(FAULTRECORDLOG_ADDR, RECORD_LOG_LEN)
+	results, err := client.ReadHoldingRegisters(addr, RECORD_LOG_LEN)
 	if err != nil {
 		return &l, err
 	}
 
-	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &l)
+	err = binary.Read(bytes.NewReader(results), binary.BigEndian, &l.Logs)
 	if err != nil {
 		return &l, err
 	}
@@ -133,10 +133,10 @@ func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	return &p, nil
 }
 
-func ReadRecord(client *ModbusClient, record uint16) (*Record, error) {
+func ReadRecord(client *ModbusClient, addr uint16) (*Record, error) {
 	r := Record{}
 
-	results, err := client.ReadHoldingRegisters(record, RECORD_INFO_LEN)
+	results, err := client.ReadHoldingRegisters(addr, RECORD_INFO_LEN)
 	if err != nil {
 		return &r, err
 	}
@@ -213,8 +213,8 @@ func ReadSummary4(client *ModbusClient) (*Summary4, error) {
 	return &s, nil
 }
 
-func ReadRemoteCmd(client *ModbusClient) (*RemoteControlParameter, error) {
-	s := RemoteControlParameter{}
+func ReadTimerParameters(client *ModbusClient) (*TimerControlParameter, error) {
+	s := TimerControlParameter{}
 
 	results, err := client.ReadHoldingRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN)
 	if err != nil {
@@ -237,10 +237,56 @@ func SwitchBreaker(client *ModbusClient, is_on bool) error {
 	return client.WriteSingleRegister(0x0400, 0xff00)
 }
 
-func SetTimerToSwitch(client *ModbusClient, params *RemoteControlParameter) error {
+func SetRecordNo(client *ModbusClient, addr uint16, num uint16) error {
 
+	return client.WriteSingleRegister(addr, num)
+}
+
+func SetTimerParameters(client *ModbusClient, jsonpath string) error {
+	r := TimerControlParameter{}
+
+	err := GetRemoteCtlSetting(jsonpath, &r)
+	if err != nil {
+		return err
+	}
+	//for test
+	/*
+		var w uint16 = TIMER_SUNDAY << 8 //week sunday
+		var h uint16 = 0x15              //hour    15
+		var t uint16 = 0x3500            //minute   20:00
+
+		r.TimeOffDH0 = w | h
+		r.TimeOffMS0 = t + 0x0000
+
+		r.TimeOnDH0 = w | h
+		r.TimeOnMS0 = t + 0x0100
+
+		r.TimeOffDH1 = w | h
+		r.TimeOffMS1 = t + 0x0200
+
+		r.TimeOnDH1 = w | h
+		r.TimeOnMS1 = t + 0x0300
+
+		r.TimeOffDH2 = w | h
+		r.TimeOffMS2 = t + 0x0400
+
+		r.TimeOnDH2 = w | h
+		r.TimeOnMS2 = t + 0x0500
+
+		r.TimeOffDH3 = w | h
+		r.TimeOffMS3 = 0x0600
+
+		r.TimeOnDH3 = w | h
+		r.TimeOnMS3 = t + 0x0700
+
+		r.TimeOnDH4 = w | h
+		r.TimeOnMS4 = t + 0x0800
+
+		r.TimeOffDH4 = w | h
+		r.TimeOffMS4 = t + 0x0900
+	*/
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, params)
+	err = binary.Write(buf, binary.BigEndian, &r)
 	if err != nil {
 		return err
 	}
