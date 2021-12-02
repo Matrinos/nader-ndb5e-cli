@@ -9,9 +9,11 @@ import (
 // results, err := client.ReadDiscreteInputs(15, 2)
 // 9600, 8, "N", 1
 // address : "/dev/ttyUSB0"
-func ConnectSlave(address string, slaveID uint8) (*ModbusClient, error) {
+func ConnectSlave(address string, slaveID uint8, protocol string, port uint8) (*ModbusClient, error) {
 	// Modbus RTU/ASCII
 	client, err := NewDeviceClient(&ConnectionInfo{
+		Protocol:    protocol,
+		Port:        502,
 		BaudRate:    9600,
 		DataBits:    8,
 		Parity:      "N",

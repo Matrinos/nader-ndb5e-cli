@@ -24,6 +24,20 @@ func main() {
 				Usage:    "/dev/usb....",
 				Required: true,
 			},
+			&cli.StringFlag{
+				Name:     "protocol",
+				Aliases:  []string{"p"},
+				Value:    "modbus-tcp",
+				Usage:    "modbus-tcp/modbus-modbus",
+				Required: false,
+			},
+			&cli.StringFlag{
+				Name:     "port",
+				Aliases:  []string{"r"},
+				Value:    "502",
+				Usage:    "502",
+				Required: false,
+			},
 		},
 		Commands: []*cli.Command{
 			{
@@ -503,9 +517,11 @@ func openConnection(c *cli.Context) (*ModbusClient, error) {
 
 	slaveID := c.Int("slave")
 	address := c.String("address")
+	protocol := c.String("protocol")
+	port := c.Int("port")
 
-	Logger.Println(fmt.Sprintf("Opening connection to address:%s,slave:%d", address, slaveID))
+	Logger.Println(fmt.Sprintf("Opening connection to address:%s,slave:%d, port:%d", address, slaveID, port))
 
-	return ConnectSlave(address, uint8(slaveID))
+	return ConnectSlave(address, uint8(slaveID), protocol, uint8(port))
 
 }
