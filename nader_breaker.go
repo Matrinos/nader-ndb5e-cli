@@ -66,7 +66,7 @@ const TIMER_MONDAY = 0x01
 const TIMER_TUESDAY = TIMER_MONDAY << 1
 const TIMER_WEDNESDAY = TIMER_MONDAY << 2
 const TIMER_THURSDAY = TIMER_MONDAY << 3
-const TIMER_FIRDAY = TIMER_MONDAY << 4
+const TIMER_FRIDAY = TIMER_MONDAY << 4
 const TIMER_SATURDAY = TIMER_MONDAY << 5
 const TIMER_SUNDAY = TIMER_MONDAY << 6
 
@@ -548,7 +548,7 @@ func GetDayHour(arrDay []interface{}, strTime string) (uint16, error) {
 		"Tuesday":   TIMER_TUESDAY,
 		"Wednesday": TIMER_WEDNESDAY,
 		"Thursday":  TIMER_THURSDAY,
-		"Firday":    TIMER_FIRDAY,
+		"Friday":    TIMER_FRIDAY,
 		"Saturday":  TIMER_SATURDAY,
 		"Sunday":    TIMER_SUNDAY,
 	}
@@ -593,7 +593,7 @@ func GetDay(DayHour uint16) []string {
 		1: "Tuesday",
 		2: "Wednesday",
 		3: "Thursday",
-		4: "Firday",
+		4: "Friday",
 		5: "Saturday",
 		6: "Sunday",
 	}
