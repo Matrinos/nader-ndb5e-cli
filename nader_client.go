@@ -70,6 +70,21 @@ func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 	return &o, nil
 }
 
+func SetOpParameters(client *ModbusClient) error {
+	op := OpParameters{}
+	op.YearMonth = 8466
+	op.DayHour = 1041
+	op.MinuteSecond = 1584
+
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, &op)
+	if err != nil {
+		return err
+	}
+
+	return client.WriteMultipleRegisters(OPPARAMETERS_ADDR, OPPARAMETERS_LEN, buf.Bytes())
+}
+
 // ReadRunStatus read run status of the device
 func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
 	r := RunStatus{}

@@ -71,6 +71,12 @@ func main() {
 				Action:  readOpParameters,
 			},
 			{
+				Name:    "operation",
+				Aliases: []string{"sp"},
+				Usage:   "Operation parameter",
+				Action:  setOpParameters,
+			},
+			{
 				Name:    "runstatus",
 				Aliases: []string{"rs"},
 				Usage:   "Operation parameter",
@@ -468,6 +474,22 @@ func readOpParameters(c *cli.Context) error {
 	return outputData(data)
 }
 
+func setOpParameters(c *cli.Context) error {
+	client, err := openConnection(c)
+	defer client.CloseConnection()
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	err = SetOpParameters(client)
+	if err != nil {
+		Logger.Fatal(err)
+		return err
+	}
+
+	return err
+}
 func readRunStatus(c *cli.Context) error {
 	client, err := openConnection(c)
 	defer client.CloseConnection()

@@ -395,10 +395,43 @@ func (p *Product) ToJson() ([]byte, error) {
 
 	return json.Marshal(m)
 }
+func (p *OpParameters) OpDate() (string, error) {
+	yearMonth, err := UintToBCDString(p.YearMonth)
+	if err != nil {
+		return "", err
+	}
 
+	dayHour, err := UintToBCDString(p.DayHour)
+	if err != nil {
+		return "", err
+	}
+
+	minSecs, err := UintToBCDString(p.MinuteSecond)
+	if err != nil {
+		return "", err
+	}
+
+	result := fmt.Sprintf("%s%s%s",
+		yearMonth,
+		dayHour,
+		minSecs)
+
+	return result, nil
+}
 func (p *OpParameters) ToJson() ([]byte, error) {
+	// jp, _ := json.Marshal(p)
+	var m map[string]interface{} = make(map[string]interface{})
+	// json.Unmarshal(jp, &m)
 
-	return json.Marshal(p)
+	date, err := p.OpDate()
+	if err != nil {
+		//TODO: handle error correctly
+		return []byte{}, err
+	}
+
+	m["Operation_date"] = date
+
+	return json.Marshal(m)
 }
 
 func (p *RunStatus) ToJson() ([]byte, error) {
