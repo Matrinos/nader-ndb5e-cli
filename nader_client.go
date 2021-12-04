@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"strconv"
+	"time"
 )
 
 // ConnectSlave try to connect to given slave id
@@ -72,12 +74,31 @@ func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 
 func SetOpParameters(client *ModbusClient) error {
 	op := OpParameters{}
-	op.YearMonth = 8466
-	op.DayHour = 1041
-	op.MinuteSecond = 1584
+	currentTime := time.Now()
+
+	yearMonthString := currentTime.Format("0601")
+	yearMonth, err := strconv.ParseInt(yearMonthString, 16, 64)
+	if err != nil {
+		return err
+	}
+	op.YearMonth = uint16(yearMonth)
+
+	dayHourString := currentTime.Format("0215")
+	dayHour, err := strconv.ParseInt(dayHourString, 16, 64)
+	if err != nil {
+		return err
+	}
+	op.DayHour = uint16(dayHour)
+
+	minuteSecondString := currentTime.Format("0405")
+	minuteSecond, err := strconv.ParseInt(minuteSecondString, 16, 64)
+	if err != nil {
+		return err
+	}
+	op.MinuteSecond = uint16(minuteSecond)
 
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, &op)
+	err = binary.Write(buf, binary.BigEndian, &op)
 	if err != nil {
 		return err
 	}
