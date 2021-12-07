@@ -26,7 +26,7 @@ func ConnectSlave(address string, slaveID uint8, protocol string, port uint8) (*
 		Timeout:     5,
 		IdleTimeout: 3600, // TODO: right idle timeout?
 		Address:     address,
-	})
+	}, nil)
 
 	if err != nil {
 		return client, err
@@ -38,7 +38,7 @@ func ConnectSlave(address string, slaveID uint8, protocol string, port uint8) (*
 		return client, err
 	}
 
-	Logger.Println("Device connected")
+	client.Logger.Info("Device connected")
 	return client, nil
 }
 

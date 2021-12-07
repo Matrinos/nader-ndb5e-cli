@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
 	MODBUS "github.com/goburrow/modbus"
 )
-
-var Logger = log.New(os.Stdout, "ascii: ", log.LstdFlags)
 
 const (
 	ProtocolTCP = "modbus-tcp"
@@ -62,6 +62,8 @@ type ModbusClient struct {
 	RTUClientHandler MODBUS.RTUClientHandler
 
 	client MODBUS.Client
+
+	Logger logger.LoggingClient
 }
 
 func (c *ModbusClient) OpenConnection() error {
@@ -70,11 +72,11 @@ func (c *ModbusClient) OpenConnection() error {
 	if c.IsModbusTcp {
 		err = c.TCPClientHandler.Connect()
 		newClient = MODBUS.NewClient(&c.TCPClientHandler)
-		Logger.Println("Modbus client create TCP connection.")
+		c.Logger.Info("Modbus client create TCP connection.")
 	} else {
 		err = c.RTUClientHandler.Connect()
 		newClient = MODBUS.NewClient(&c.RTUClientHandler)
-		Logger.Println("Modbus client create RTU connection.")
+		c.Logger.Info("Modbus client create RTU connection.")
 	}
 	c.client = newClient
 	return err
@@ -83,11 +85,11 @@ func (c *ModbusClient) OpenConnection() error {
 func (c *ModbusClient) CloseConnection() error {
 	var err error
 	if c.IsModbusTcp {
-		Logger.Println("Modbus client close TCP connection.")
+		c.Logger.Info("Modbus client close TCP connection.")
 		err = c.TCPClientHandler.Close()
 
 	} else {
-		Logger.Println("Modbus client close RTU connection.")
+		c.Logger.Info("Modbus client close RTU connection.")
 		err = c.RTUClientHandler.Close()
 	}
 	return err
@@ -99,7 +101,7 @@ func (c *ModbusClient) ReadHoldingRegisters(startingAddress uint16, length uint1
 		return response, err
 	}
 
-	Logger.Println(fmt.Sprintf("Modbus client ReadHoldingRegisters's results %v", response))
+	c.Logger.Info(fmt.Sprintf("Modbus client ReadHoldingRegisters's results %v", response))
 
 	return response, nil
 }
@@ -110,7 +112,7 @@ func (c *ModbusClient) ReadDiscreteInputs(startingAddress uint16, length uint16)
 		return response, err
 	}
 
-	Logger.Println(fmt.Sprintf("Modbus client ReadDiscreteInputs's results %v", response))
+	c.Logger.Info(fmt.Sprintf("Modbus client ReadDiscreteInputs's results %v", response))
 
 	return response, nil
 }
@@ -121,7 +123,7 @@ func (c *ModbusClient) ReadInputRegisters(startingAddress uint16, length uint16)
 		return response, err
 	}
 
-	Logger.Println(fmt.Sprintf("Modbus client ReadInputRegisters's results %v", response))
+	c.Logger.Info(fmt.Sprintf("Modbus client ReadInputRegisters's results %v", response))
 
 	return response, nil
 }
@@ -132,7 +134,7 @@ func (c *ModbusClient) ReadCoils(startingAddress uint16, length uint16) ([]byte,
 		return response, err
 	}
 
-	Logger.Println(fmt.Sprintf("Modbus client ReadCoils's results %v", response))
+	c.Logger.Info(fmt.Sprintf("Modbus client ReadCoils's results %v", response))
 
 	return response, nil
 }
@@ -143,7 +145,7 @@ func (c *ModbusClient) WriteMultipleCoils(startingAddress uint16, length uint16,
 	if err != nil {
 		return err
 	}
-	Logger.Println(fmt.Sprintf("Modbus client SetValue successful, results: %v", result))
+	c.Logger.Info(fmt.Sprintf("Modbus client SetValue successful, results: %v", result))
 
 	return nil
 }
@@ -154,7 +156,7 @@ func (c *ModbusClient) WriteSingleRegister(startingAddress uint16, value uint16)
 	if err != nil {
 		return err
 	}
-	Logger.Println(fmt.Sprintf("Modbus client SetValue successful, results: %v", result))
+	c.Logger.Info(fmt.Sprintf("Modbus client SetValue successful, results: %v", result))
 
 	return nil
 }
@@ -165,13 +167,18 @@ func (c *ModbusClient) WriteMultipleRegisters(startingAddress uint16, length uin
 	if err != nil {
 		return err
 	}
-	Logger.Println(fmt.Sprintf("Modbus client SetValue successful, results: %v", result))
+	c.Logger.Info(fmt.Sprintf("Modbus client SetValue successful, results: %v", result))
 
 	return nil
 }
 
-func NewDeviceClient(connectionInfo *ConnectionInfo) (*ModbusClient, error) {
+func NewDeviceClient(connectionInfo *ConnectionInfo, logging logger.LoggingClient) (*ModbusClient, error) {
 	client := new(ModbusClient)
+	if logging != nil {
+		client.Logger = logging
+	} else {
+		client.Logger = logger.NewClient("ndb5e-cli", models.InfoLog)
+	}
 	var err error
 	if connectionInfo.Protocol == ProtocolTCP {
 		client.IsModbusTcp = true

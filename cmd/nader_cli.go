@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"github.com/Matrinos/nader-ndb5e-cli/models"
 	"github.com/urfave/cli/v2"
 )
+
+var Logger = log.New(os.Stdout, "ascii: ", log.LstdFlags)
 
 func main() {
 	app := &cli.App{
