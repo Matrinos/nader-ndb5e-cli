@@ -9,5 +9,4 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/yerden/go-util v1.1.4
-	golang.org/x/tools v0.1.7 // indirect
 )

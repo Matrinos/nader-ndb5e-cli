@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Matrinos/nader-ndb5e-cli/models"
 	"github.com/urfave/cli/v2"
 )
 
@@ -251,12 +252,12 @@ func readLogs(c *cli.Context) error {
 	var GroupNum uint16 = 0
 	logType := uint16(c.Int("logtype"))
 
-	if logType == FAULT_TYPE {
-		GroupNum = (MAX_FAULTRECORDLOG_NUM / LOGSINGROUP_NUM)
-	} else if logType == ALARM_TYPE {
-		GroupNum = (MAX_ALARMRECORDLOG_NUM / LOGSINGROUP_NUM)
-	} else if logType == SWITCH_TYPE {
-		GroupNum = (MAX_SWITCHRECORDLOG_NUM / LOGSINGROUP_NUM)
+	if logType == models.FAULT_TYPE {
+		GroupNum = (models.MAX_FAULTRECORDLOG_NUM / models.LOGSINGROUP_NUM)
+	} else if logType == models.ALARM_TYPE {
+		GroupNum = (models.MAX_ALARMRECORDLOG_NUM / models.LOGSINGROUP_NUM)
+	} else if logType == models.SWITCH_TYPE {
+		GroupNum = (models.MAX_SWITCHRECORDLOG_NUM / models.LOGSINGROUP_NUM)
 	}
 
 	for GroupID := uint16(0); GroupID < GroupNum; GroupID++ {
@@ -277,14 +278,14 @@ func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 	var addr uint16 = 0
 	logType := uint16(c.Int("logtype"))
 
-	for index := uint16(0); index < LOGSINGROUP_NUM; index++ {
-		logIndex := GroupIndex*LOGSINGROUP_NUM + index
-		if logType == FAULT_TYPE {
-			addr = (FAULTRECORDLOG_ADDR + logIndex*RECORD_LOG_LEN)
-		} else if logType == ALARM_TYPE {
-			addr = (ALARMRECORDLOG_ADDR + logIndex)
-		} else if logType == SWITCH_TYPE {
-			addr = (SWITCHRECORDLOG_ADDR + logIndex)
+	for index := uint16(0); index < models.LOGSINGROUP_NUM; index++ {
+		logIndex := GroupIndex*models.LOGSINGROUP_NUM + index
+		if logType == models.FAULT_TYPE {
+			addr = (models.FAULTRECORDLOG_ADDR + logIndex*models.RECORD_LOG_LEN)
+		} else if logType == models.ALARM_TYPE {
+			addr = (models.ALARMRECORDLOG_ADDR + logIndex)
+		} else if logType == models.SWITCH_TYPE {
+			addr = (models.SWITCHRECORDLOG_ADDR + logIndex)
 		} else {
 			return err
 		}
@@ -331,12 +332,12 @@ func setRecordNumber(c *cli.Context) error {
 
 	recordtype := c.Int("recordtype")
 	recordnum := uint16(c.Int("recordnum"))
-	if recordtype == FAULT_TYPE {
-		return SetRecordNo(client, FAULTRECORD_NUM_ADDR, recordnum)
-	} else if recordtype == ALARM_TYPE {
-		return SetRecordNo(client, ALARMRECORD_NUM_ADDR, recordnum)
-	} else if recordtype == SWITCH_TYPE {
-		return SetRecordNo(client, SWITCHRECORD_NUM_ADDR, recordnum)
+	if recordtype == models.FAULT_TYPE {
+		return SetRecordNo(client, models.FAULTRECORD_NUM_ADDR, recordnum)
+	} else if recordtype == models.ALARM_TYPE {
+		return SetRecordNo(client, models.ALARMRECORD_NUM_ADDR, recordnum)
+	} else if recordtype == models.SWITCH_TYPE {
+		return SetRecordNo(client, models.SWITCHRECORD_NUM_ADDR, recordnum)
 	}
 
 	return err
@@ -353,12 +354,12 @@ func readRecord(c *cli.Context) error {
 	recordtype := c.Int("recordtype")
 	var addr uint16 = 0
 
-	if recordtype == FAULT_TYPE {
-		addr = FAULTRECORD_ADDR
-	} else if recordtype == ALARM_TYPE {
-		addr = ALARMRECORD_ADDR
-	} else if recordtype == SWITCH_TYPE {
-		addr = SWITCHRECORD_ADDR
+	if recordtype == models.FAULT_TYPE {
+		addr = models.FAULTRECORD_ADDR
+	} else if recordtype == models.ALARM_TYPE {
+		addr = models.ALARMRECORD_ADDR
+	} else if recordtype == models.SWITCH_TYPE {
+		addr = models.SWITCHRECORD_ADDR
 	} else {
 		return err
 	}
@@ -524,7 +525,7 @@ func readTimerParameters(c *cli.Context) error {
 	return outputData(data)
 }
 
-func outputData(data JsonMarshal) error {
+func outputData(data models.JsonMarshal) error {
 	jsonData, err := data.ToJson()
 	if err != nil {
 		Logger.Fatal(err)

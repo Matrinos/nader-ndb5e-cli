@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"strconv"
 	"time"
+
+	"github.com/Matrinos/nader-ndb5e-cli/models"
 )
 
 // ConnectSlave try to connect to given slave id
@@ -40,10 +42,10 @@ func ConnectSlave(address string, slaveID uint8, protocol string, port uint8) (*
 	return client, nil
 }
 
-func ReadProduct(client *ModbusClient) (*Product, error) {
-	p := Product{}
+func ReadProduct(client *ModbusClient) (*models.Product, error) {
+	p := models.Product{}
 
-	results, err := client.ReadHoldingRegisters(PRODUCT_ADDR, PRODUCT_LEN)
+	results, err := client.ReadHoldingRegisters(models.PRODUCT_ADDR, models.PRODUCT_LEN)
 	if err != nil {
 		return &p, err
 	}
@@ -56,10 +58,10 @@ func ReadProduct(client *ModbusClient) (*Product, error) {
 	return &p, nil
 }
 
-func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
-	o := OpParameters{}
+func ReadOpParameters(client *ModbusClient) (*models.OpParameters, error) {
+	o := models.OpParameters{}
 
-	results, err := client.ReadHoldingRegisters(OPPARAMETERS_ADDR, OPPARAMETERS_LEN)
+	results, err := client.ReadHoldingRegisters(models.OPPARAMETERS_ADDR, models.OPPARAMETERS_LEN)
 	if err != nil {
 		return &o, err
 	}
@@ -73,7 +75,7 @@ func ReadOpParameters(client *ModbusClient) (*OpParameters, error) {
 }
 
 func SetOpParameters(client *ModbusClient) error {
-	op := OpParameters{}
+	op := models.OpParameters{}
 	currentTime := time.Now()
 
 	yearMonthString := currentTime.Format("0601")
@@ -103,14 +105,14 @@ func SetOpParameters(client *ModbusClient) error {
 		return err
 	}
 
-	return client.WriteMultipleRegisters(OPPARAMETERS_ADDR, OPPARAMETERS_LEN, buf.Bytes())
+	return client.WriteMultipleRegisters(models.OPPARAMETERS_ADDR, models.OPPARAMETERS_LEN, buf.Bytes())
 }
 
 // ReadRunStatus read run status of the device
-func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
-	r := RunStatus{}
+func ReadRunStatus(client *ModbusClient) (*models.RunStatus, error) {
+	r := models.RunStatus{}
 
-	results, err := client.ReadHoldingRegisters(RUNSTATUS_ADDR, RUNSTATUS_LEN)
+	results, err := client.ReadHoldingRegisters(models.RUNSTATUS_ADDR, models.RUNSTATUS_LEN)
 	if err != nil {
 		return &r, err
 	}
@@ -123,10 +125,10 @@ func ReadRunStatus(client *ModbusClient) (*RunStatus, error) {
 	return &r, nil
 }
 
-func ReadData(client *ModbusClient) (*MetricalData, error) {
-	d := MetricalData{}
+func ReadData(client *ModbusClient) (*models.MetricalData, error) {
+	d := models.MetricalData{}
 
-	results, err := client.ReadHoldingRegisters(METRICALDATA_ADDR, METRICALDATA_LEN)
+	results, err := client.ReadHoldingRegisters(models.METRICALDATA_ADDR, models.METRICALDATA_LEN)
 	if err != nil {
 		return &d, err
 	}
@@ -139,10 +141,10 @@ func ReadData(client *ModbusClient) (*MetricalData, error) {
 	return &d, nil
 }
 
-func ReadLogs(client *ModbusClient, addr uint16) (*RecordLogsInfo, error) {
-	l := RecordLogsInfo{}
+func ReadLogs(client *ModbusClient, addr uint16) (*models.RecordLogsInfo, error) {
+	l := models.RecordLogsInfo{}
 
-	results, err := client.ReadHoldingRegisters(addr, RECORD_LOG_LEN)
+	results, err := client.ReadHoldingRegisters(addr, models.RECORD_LOG_LEN)
 	if err != nil {
 		return &l, err
 	}
@@ -155,10 +157,10 @@ func ReadLogs(client *ModbusClient, addr uint16) (*RecordLogsInfo, error) {
 	return &l, nil
 }
 
-func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
-	p := ProtectParameters{}
+func ReadProtectParameters(client *ModbusClient) (*models.ProtectParameters, error) {
+	p := models.ProtectParameters{}
 
-	results, err := client.ReadHoldingRegisters(PRETECTPARAMETERS_ADDR, PRETECTPARAMETERS_LEN)
+	results, err := client.ReadHoldingRegisters(models.PRETECTPARAMETERS_ADDR, models.PRETECTPARAMETERS_LEN)
 	if err != nil {
 		return &p, err
 	}
@@ -171,10 +173,10 @@ func ReadProtectParameters(client *ModbusClient) (*ProtectParameters, error) {
 	return &p, nil
 }
 
-func ReadRecord(client *ModbusClient, addr uint16) (*Record, error) {
-	r := Record{}
+func ReadRecord(client *ModbusClient, addr uint16) (*models.Record, error) {
+	r := models.Record{}
 
-	results, err := client.ReadHoldingRegisters(addr, RECORD_INFO_LEN)
+	results, err := client.ReadHoldingRegisters(addr, models.RECORD_INFO_LEN)
 	if err != nil {
 		return &r, err
 	}
@@ -187,10 +189,10 @@ func ReadRecord(client *ModbusClient, addr uint16) (*Record, error) {
 	return &r, nil
 }
 
-func ReadSummary1(client *ModbusClient) (*Summary1, error) {
-	s := Summary1{}
+func ReadSummary1(client *ModbusClient) (*models.Summary1, error) {
+	s := models.Summary1{}
 
-	results, err := client.ReadHoldingRegisters(FE_TEMPERATURES_ADDR, FE_TEMPERATURES_LEN)
+	results, err := client.ReadHoldingRegisters(models.FE_TEMPERATURES_ADDR, models.FE_TEMPERATURES_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -203,10 +205,10 @@ func ReadSummary1(client *ModbusClient) (*Summary1, error) {
 	return &s, nil
 }
 
-func ReadSummary2(client *ModbusClient) (*Summary2, error) {
-	s := Summary2{}
+func ReadSummary2(client *ModbusClient) (*models.Summary2, error) {
+	s := models.Summary2{}
 
-	results, err := client.ReadHoldingRegisters(FE_ENERGYPERHOUR_ADDR, FE_ENERGYPERHOUR_LEN)
+	results, err := client.ReadHoldingRegisters(models.FE_ENERGYPERHOUR_ADDR, models.FE_ENERGYPERHOUR_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -219,10 +221,10 @@ func ReadSummary2(client *ModbusClient) (*Summary2, error) {
 	return &s, nil
 }
 
-func ReadSummary3(client *ModbusClient) (*Summary3, error) {
-	s := Summary3{}
+func ReadSummary3(client *ModbusClient) (*models.Summary3, error) {
+	s := models.Summary3{}
 
-	results, err := client.ReadHoldingRegisters(FE_ENERGYPERDAY_ADDR, FE_ENERGYPERDAY_LEN)
+	results, err := client.ReadHoldingRegisters(models.FE_ENERGYPERDAY_ADDR, models.FE_ENERGYPERDAY_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -235,10 +237,10 @@ func ReadSummary3(client *ModbusClient) (*Summary3, error) {
 	return &s, nil
 }
 
-func ReadSummary4(client *ModbusClient) (*Summary4, error) {
-	s := Summary4{}
+func ReadSummary4(client *ModbusClient) (*models.Summary4, error) {
+	s := models.Summary4{}
 
-	results, err := client.ReadHoldingRegisters(FE_ENERGYPERMONTH_ADDR, FE_ENERGYPERMONTH_LEN)
+	results, err := client.ReadHoldingRegisters(models.FE_ENERGYPERMONTH_ADDR, models.FE_ENERGYPERMONTH_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -251,10 +253,10 @@ func ReadSummary4(client *ModbusClient) (*Summary4, error) {
 	return &s, nil
 }
 
-func ReadTimerParameters(client *ModbusClient) (*TimerControlParameter, error) {
-	s := TimerControlParameter{}
+func ReadTimerParameters(client *ModbusClient) (*models.TimerControlParameter, error) {
+	s := models.TimerControlParameter{}
 
-	results, err := client.ReadHoldingRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN)
+	results, err := client.ReadHoldingRegisters(models.REMOTECONTROL_ADDR, models.REMOTECONTROL_LEN)
 	if err != nil {
 		return &s, err
 	}
@@ -281,9 +283,9 @@ func SetRecordNo(client *ModbusClient, addr uint16, num uint16) error {
 }
 
 func SetTimerParameters(client *ModbusClient, jsonpath string) error {
-	r := TimerControlParameter{}
+	r := models.TimerControlParameter{}
 
-	err := GetRemoteCtlSetting(jsonpath, &r)
+	err := models.GetRemoteCtlSetting(jsonpath, &r)
 	if err != nil {
 		return err
 	}
@@ -328,7 +330,7 @@ func SetTimerParameters(client *ModbusClient, jsonpath string) error {
 	if err != nil {
 		return err
 	}
-	return client.WriteMultipleRegisters(REMOTECONTROL_ADDR, REMOTECONTROL_LEN, buf.Bytes())
+	return client.WriteMultipleRegisters(models.REMOTECONTROL_ADDR, models.REMOTECONTROL_LEN, buf.Bytes())
 }
 
 // func sample() {
