@@ -303,6 +303,11 @@ func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 		data.LogType = logType
 
 		err = outputData(data)
+		if err != nil {
+			Logger.Fatal(err)
+			return err
+		}
+
 		time.Sleep(2000)
 	}
 
