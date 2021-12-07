@@ -312,10 +312,19 @@ func setRecordNumber(c *cli.Context) error {
 	recordtype := c.Int("recordtype")
 	recordnum := uint16(c.Int("recordnum"))
 	if recordtype == FAULT_TYPE {
+		if recordnum > MAX_FAULTRECORD_NUM {
+			return fmt.Errorf("The maximum number of fault record is 10. Please set recordnum between 1 - 10.")
+		}
 		return SetRecordNo(client, FAULTRECORD_NUM_ADDR, recordnum)
 	} else if recordtype == ALARM_TYPE {
+		if recordnum > MAX_ALARMRECORD_NUM {
+			return fmt.Errorf("The maximum number of alarm record is 10. Please set recordnum between 1 - 10.")
+		}
 		return SetRecordNo(client, ALARMRECORD_NUM_ADDR, recordnum)
 	} else if recordtype == SWITCH_TYPE {
+		if recordnum > MAX_SWITCHRECORD_NUM {
+			return fmt.Errorf("The maximum number of switch record is 30. Please set recordnum between 1 - 30.")
+		}
 		return SetRecordNo(client, SWITCHRECORD_NUM_ADDR, recordnum)
 	}
 
