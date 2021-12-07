@@ -1,4 +1,4 @@
-module io.matrinos.nader.mqtt
+module github.com/Matrinos/nader-ndb5e-cli
 
 go 1.16
 
