@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
+	"github.com/Matrinos/nader-ndb5e-cli/modbus"
+	"github.com/Matrinos/nader-ndb5e-cli/models"
 	"github.com/urfave/cli/v2"
 )
+
+var Logger = log.New(os.Stdout, "ascii: ", log.LstdFlags)
 
 func main() {
 	app := &cli.App{
@@ -201,7 +206,7 @@ func turnOff(c *cli.Context) error {
 		Logger.Fatal(err)
 		return err
 	}
-	return SwitchBreaker(client, false)
+	return modbus.SwitchBreaker(client, false)
 }
 
 func turnOn(c *cli.Context) error {
@@ -212,7 +217,7 @@ func turnOn(c *cli.Context) error {
 		Logger.Fatal(err)
 		return err
 	}
-	return SwitchBreaker(client, true)
+	return modbus.SwitchBreaker(client, true)
 }
 
 func setTimerParameters(c *cli.Context) error {
@@ -226,7 +231,7 @@ func setTimerParameters(c *cli.Context) error {
 
 	jsonpath := c.String("jsonpath")
 
-	return SetTimerParameters(client, jsonpath)
+	return modbus.SetTimerParameters(client, jsonpath)
 }
 
 func readData(c *cli.Context) error {
@@ -237,7 +242,7 @@ func readData(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadData(client)
+	data, err := modbus.ReadData(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -251,12 +256,12 @@ func readLogs(c *cli.Context) error {
 	var GroupNum uint16 = 0
 	logType := uint16(c.Int("logtype"))
 
-	if logType == FAULT_TYPE {
-		GroupNum = (MAX_FAULTRECORDLOG_NUM / LOGSINGROUP_NUM)
-	} else if logType == ALARM_TYPE {
-		GroupNum = (MAX_ALARMRECORDLOG_NUM / LOGSINGROUP_NUM)
-	} else if logType == SWITCH_TYPE {
-		GroupNum = (MAX_SWITCHRECORDLOG_NUM / LOGSINGROUP_NUM)
+	if logType == models.FAULT_TYPE {
+		GroupNum = (models.MAX_FAULTRECORDLOG_NUM / models.LOGSINGROUP_NUM)
+	} else if logType == models.ALARM_TYPE {
+		GroupNum = (models.MAX_ALARMRECORDLOG_NUM / models.LOGSINGROUP_NUM)
+	} else if logType == models.SWITCH_TYPE {
+		GroupNum = (models.MAX_SWITCHRECORDLOG_NUM / models.LOGSINGROUP_NUM)
 	}
 
 	for GroupID := uint16(0); GroupID < GroupNum; GroupID++ {
@@ -277,18 +282,18 @@ func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 	var addr uint16 = 0
 	logType := uint16(c.Int("logtype"))
 
-	for index := uint16(0); index < LOGSINGROUP_NUM; index++ {
-		logIndex := GroupIndex*LOGSINGROUP_NUM + index
-		if logType == FAULT_TYPE {
-			addr = (FAULTRECORDLOG_ADDR + logIndex*RECORD_LOG_LEN)
-		} else if logType == ALARM_TYPE {
-			addr = (ALARMRECORDLOG_ADDR + logIndex)
-		} else if logType == SWITCH_TYPE {
-			addr = (SWITCHRECORDLOG_ADDR + logIndex)
+	for index := uint16(0); index < models.LOGSINGROUP_NUM; index++ {
+		logIndex := GroupIndex*models.LOGSINGROUP_NUM + index
+		if logType == models.FAULT_TYPE {
+			addr = (models.FAULTRECORDLOG_ADDR + logIndex*models.RECORD_LOG_LEN)
+		} else if logType == models.ALARM_TYPE {
+			addr = (models.ALARMRECORDLOG_ADDR + logIndex)
+		} else if logType == models.SWITCH_TYPE {
+			addr = (models.SWITCHRECORDLOG_ADDR + logIndex)
 		} else {
 			return err
 		}
-		data, err := ReadLogs(client, addr)
+		data, err := modbus.ReadLogs(client, addr)
 		if err != nil {
 			Logger.Fatal(err)
 			return err
@@ -298,6 +303,11 @@ func readLogGroup(c *cli.Context, GroupIndex uint16) error {
 		data.LogType = logType
 
 		err = outputData(data)
+		if err != nil {
+			Logger.Fatal(err)
+			return err
+		}
+
 		time.Sleep(2000)
 	}
 
@@ -312,7 +322,7 @@ func readProtectParameters(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadProtectParameters(client)
+	data, err := modbus.ReadProtectParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -331,12 +341,12 @@ func setRecordNumber(c *cli.Context) error {
 
 	recordtype := c.Int("recordtype")
 	recordnum := uint16(c.Int("recordnum"))
-	if recordtype == FAULT_TYPE {
-		return SetRecordNo(client, FAULTRECORD_NUM_ADDR, recordnum)
-	} else if recordtype == ALARM_TYPE {
-		return SetRecordNo(client, ALARMRECORD_NUM_ADDR, recordnum)
-	} else if recordtype == SWITCH_TYPE {
-		return SetRecordNo(client, SWITCHRECORD_NUM_ADDR, recordnum)
+	if recordtype == models.FAULT_TYPE {
+		return modbus.SetRecordNo(client, models.FAULTRECORD_NUM_ADDR, recordnum)
+	} else if recordtype == models.ALARM_TYPE {
+		return modbus.SetRecordNo(client, models.ALARMRECORD_NUM_ADDR, recordnum)
+	} else if recordtype == models.SWITCH_TYPE {
+		return modbus.SetRecordNo(client, models.SWITCHRECORD_NUM_ADDR, recordnum)
 	}
 
 	return err
@@ -353,17 +363,17 @@ func readRecord(c *cli.Context) error {
 	recordtype := c.Int("recordtype")
 	var addr uint16 = 0
 
-	if recordtype == FAULT_TYPE {
-		addr = FAULTRECORD_ADDR
-	} else if recordtype == ALARM_TYPE {
-		addr = ALARMRECORD_ADDR
-	} else if recordtype == SWITCH_TYPE {
-		addr = SWITCHRECORD_ADDR
+	if recordtype == models.FAULT_TYPE {
+		addr = models.FAULTRECORD_ADDR
+	} else if recordtype == models.ALARM_TYPE {
+		addr = models.ALARMRECORD_ADDR
+	} else if recordtype == models.SWITCH_TYPE {
+		addr = models.SWITCHRECORD_ADDR
 	} else {
 		return err
 	}
 
-	data, err := ReadRecord(client, addr)
+	data, err := modbus.ReadRecord(client, addr)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -380,7 +390,7 @@ func readSummary1(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadSummary1(client)
+	data, err := modbus.ReadSummary1(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -397,7 +407,7 @@ func readSummary2(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadSummary2(client)
+	data, err := modbus.ReadSummary2(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -414,7 +424,7 @@ func readSummary3(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadSummary3(client)
+	data, err := modbus.ReadSummary3(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -431,7 +441,7 @@ func readSummary4(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadSummary4(client)
+	data, err := modbus.ReadSummary4(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -448,7 +458,7 @@ func readProduct(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadProduct(client)
+	data, err := modbus.ReadProduct(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -465,7 +475,7 @@ func readOpParameters(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadOpParameters(client)
+	data, err := modbus.ReadOpParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -482,7 +492,7 @@ func setOpParameters(c *cli.Context) error {
 		return err
 	}
 
-	err = SetOpParameters(client)
+	err = modbus.SetOpParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -498,7 +508,7 @@ func readRunStatus(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadRunStatus(client)
+	data, err := modbus.ReadRunStatus(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -515,7 +525,7 @@ func readTimerParameters(c *cli.Context) error {
 		return err
 	}
 
-	data, err := ReadTimerParameters(client)
+	data, err := modbus.ReadTimerParameters(client)
 	if err != nil {
 		Logger.Fatal(err)
 		return err
@@ -524,7 +534,7 @@ func readTimerParameters(c *cli.Context) error {
 	return outputData(data)
 }
 
-func outputData(data JsonMarshal) error {
+func outputData(data models.JsonMarshal) error {
 	jsonData, err := data.ToJson()
 	if err != nil {
 		Logger.Fatal(err)
@@ -535,7 +545,7 @@ func outputData(data JsonMarshal) error {
 	return nil
 }
 
-func openConnection(c *cli.Context) (*ModbusClient, error) {
+func openConnection(c *cli.Context) (*modbus.ModbusClient, error) {
 
 	slaveID := c.Int("slave")
 	address := c.String("address")
@@ -544,6 +554,6 @@ func openConnection(c *cli.Context) (*ModbusClient, error) {
 
 	Logger.Println(fmt.Sprintf("Opening connection to address:%s,slave:%d, port:%d", address, slaveID, port))
 
-	return ConnectSlave(address, uint8(slaveID), protocol, uint8(port))
+	return modbus.ConnectSlave(address, uint8(slaveID), protocol, uint8(port))
 
 }
