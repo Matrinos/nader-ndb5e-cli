@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Modified by Q.s. Wang for our project usage
 
-package main
+package modbus
 
 import (
 	"fmt"
