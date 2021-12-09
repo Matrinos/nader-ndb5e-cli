@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSomething(t *testing.T) {
+func TestProductToJson(t *testing.T) {
 
 	var p = Product{
 
@@ -41,6 +41,82 @@ func TestSomething(t *testing.T) {
 
 	assert.Equal(t, "00210610", jsonMap[MANUFACTURE_DATE], "they should be equal")
 	assert.Equal(t, "abcde", fmt.Sprintf("%v", jsonMap["SerialNumber"]))
+}
+
+func TestMetricalDataToSenML(t *testing.T) {
+
+	m := MetricalData{
+
+		ACurrent:            5,
+		BCurrent:            5,
+		CCurrent:            5,
+		AVoltage:            220,
+		BVoltage:            220,
+		CVoltage:            220,
+		ABVoltage:           360,
+		BCVoltage:           360,
+		CAVoltage:           360,
+		AFrequency:          50,
+		BFrequency:          50,
+		CFrequency:          50,
+		PhaseState:          1,
+		ARealPower:          100,
+		BRealPower:          100,
+		CRealPower:          100,
+		RealPowerTotal:      200,
+		AReactivePower:      100,
+		BReactivePower:      100,
+		CReactivePower:      100,
+		ReactivePowerTotal:  200,
+		AApparentPower:      100,
+		BApparentPower:      100,
+		CApparentPower:      100,
+		ApparentPowerTotal:  200,
+		TotalUsagePower:     200,
+		APowerFactor:        99,
+		BPowerFactor:        99,
+		CPowerFactor:        99,
+		TotalPowerFactor:    99,
+		AActiveEnergy:       100,
+		BActiveEnergy:       100,
+		CActiveEnergy:       100,
+		ActiveEnergyTotal:   200,
+		AReactiveEnergy:     100,
+		BReactiveEnergy:     100,
+		CReactiveEnergy:     100,
+		ReactiveEnergyTotal: 200,
+		AApparentEnergy:     100,
+		BApparentEnergy:     100,
+		CApparentEnergy:     100,
+		ApparentEnergyTotal: 200,
+		Temperature:         100,
+		LeakageCurrent:      100,
+	}
+
+	data, err := m.ToSenML(BaseSenML{
+		BN: "device-123456",
+		BT: 1496756806655,
+		L:  "a1231-123-123",
+	})
+	if err != nil {
+		t.Error()
+	}
+
+	// fmt.Println(data)
+
+	jsonMap := make([]interface{}, 0)
+	json.Unmarshal(data, &jsonMap)
+
+	base := jsonMap[0].(map[string]interface{})
+	assert.Equal(t, "device-123456", base["bn"])
+	assert.Equal(t, "a1231-123-123", base["l"])
+	assert.Equal(t, 1496756806655.0, base["bt"])
+
+	leakageCurrent := jsonMap[44].(map[string]interface{})
+
+	assert.Equal(t, "LeakageCurrent", leakageCurrent["n"], "they should be equal")
+	assert.Equal(t, 10.0, leakageCurrent["v"], "they should be equal")
+	assert.Equal(t, "mA", leakageCurrent["u"])
 }
 
 func TestTimerControlStruct(t *testing.T) {
