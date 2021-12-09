@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mainflux/senml"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,7 +51,7 @@ func TestMetricalDataToSenML(t *testing.T) {
 		ACurrent:            5,
 		BCurrent:            5,
 		CCurrent:            5,
-		AVoltage:            220,
+		AVoltage:            0,
 		BVoltage:            220,
 		CVoltage:            220,
 		ABVoltage:           360,
@@ -173,6 +174,16 @@ func TestMetricalUnmarshalJsonStringToMetricalData(t *testing.T) {
 	assert.Equal(t, uint16(501), target.AFrequency)
 	assert.Equal(t, uint16(100), target.TotalPowerFactor)
 	assert.Equal(t, uint16(321), target.Temperature)
+
+	senmlString, err := target.ToSenML(BaseSenML{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = senml.Decode([]byte(senmlString), senml.JSON)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestTimerControlStruct(t *testing.T) {

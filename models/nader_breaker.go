@@ -552,9 +552,15 @@ func (d *MetricalData) ToJson() ([]byte, error) {
 func (d *MetricalData) ToSenML(baseML BaseSenML) ([]byte, error) {
 	result := make([]interface{}, 0)
 
-	result = append(result, baseML)
+	// The mainflux implementation of the SenML spec requires that the base
+	// record must have name
+	// use the first field as the base record name
+	baseML.V = float32(d.ACurrent) * 0.01
+	baseML.U = "A"
+	baseML.N = "ACurrent"
 
-	result = append(result, SenML{N: "ACurrent", V: float32(d.ACurrent) * 0.01, U: "A"})
+	result = append(result, baseML)
+	// result = append(result, SenML{N: "ACurrent", V: float32(d.ACurrent) * 0.01, U: "A"})
 	result = append(result, SenML{N: "BCurrent", V: float32(d.BCurrent) * 0.01, U: "A"})
 	result = append(result, SenML{N: "CCurrent", V: float32(d.CCurrent) * 0.01, U: "A"})
 	result = append(result, SenML{N: "AVoltage", V: float32(d.AVoltage) * 0.01, U: "V"})
