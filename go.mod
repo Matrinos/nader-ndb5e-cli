@@ -1,4 +1,4 @@
-module github.com/Matrinos/nader-ndb5e-cli
+module github.com/tuxiot/nader-ndb5e-cli
 
 go 1.16
 
