@@ -120,9 +120,9 @@ type (
 	}
 
 	MetricalData struct {
-		ACurrent            uint32
-		BCurrent            uint32
-		CCurrent            uint32
+		ACurrent            uint32 `json:"ACurrent"`
+		BCurrent            uint32 `json:"BCurrent"`
+		CCurrent            uint32 `json:"CCurrent"`
 		_                   uint32
 		_                   uint16
 		_                   uint16
@@ -132,52 +132,52 @@ type (
 		_                   uint32
 		_                   uint32
 		_                   uint32
-		AVoltage            uint16
-		BVoltage            uint16
-		CVoltage            uint16
-		ABVoltage           uint16
-		BCVoltage           uint16
-		CAVoltage           uint16
+		AVoltage            uint16 `json:"AVoltage"`
+		BVoltage            uint16 `json:"BVoltage"`
+		CVoltage            uint16 `json:"CVoltage"`
+		ABVoltage           uint16 `json:"ABVoltage"`
+		BCVoltage           uint16 `json:"BCVoltage"`
+		CAVoltage           uint16 `json:"CAVoltage"`
 		_                   uint16
 		_                   uint16
-		AFrequency          uint16
-		BFrequency          uint16
-		CFrequency          uint16
-		PhaseState          uint16
-		ARealPower          uint16
-		BRealPower          uint16
-		CRealPower          uint16
-		RealPowerTotal      uint16
-		AReactivePower      uint16
-		BReactivePower      uint16
-		CReactivePower      uint16
-		ReactivePowerTotal  uint16
-		AApparentPower      uint16
-		BApparentPower      uint16
-		CApparentPower      uint16
-		ApparentPowerTotal  uint16
+		AFrequency          uint16 `json:"AFrequency"`
+		BFrequency          uint16 `json:"BFrequency"`
+		CFrequency          uint16 `json:"CFrequency"`
+		PhaseState          uint16 `json:"PhaseState"`
+		ARealPower          uint16 `json:"ARealPower"`
+		BRealPower          uint16 `json:"BRealPower"`
+		CRealPower          uint16 `json:"CRealPower"`
+		RealPowerTotal      uint16 `json:"RealPowerTotal"`
+		AReactivePower      uint16 `json:"AReactivePower"`
+		BReactivePower      uint16 `json:"BReactivePower"`
+		CReactivePower      uint16 `json:"CReactivePower"`
+		ReactivePowerTotal  uint16 `json:"ReactivePowerTotal"`
+		AApparentPower      uint16 `json:"AApparentPower"`
+		BApparentPower      uint16 `json:"BApparentPower"`
+		CApparentPower      uint16 `json:"CApparentPower"`
+		ApparentPowerTotal  uint16 `json:"ApparentPowerTotal"`
 		_                   uint16
 		_                   uint16
 		_                   uint16
-		TotalUsagePower     uint16
-		APowerFactor        uint16
-		BPowerFactor        uint16
-		CPowerFactor        uint16
-		TotalPowerFactor    uint16
-		AActiveEnergy       uint32
-		BActiveEnergy       uint32
-		CActiveEnergy       uint32
-		ActiveEnergyTotal   uint32
-		AReactiveEnergy     uint32
-		BReactiveEnergy     uint32
-		CReactiveEnergy     uint32
-		ReactiveEnergyTotal uint32
-		AApparentEnergy     uint32
-		BApparentEnergy     uint32
-		CApparentEnergy     uint32
-		ApparentEnergyTotal uint32
-		Temperature         int16
-		LeakageCurrent      uint16
+		TotalUsagePower     uint16 `json:"TotalUsagePower"`
+		APowerFactor        uint16 `json:"APowerFactor"`
+		BPowerFactor        uint16 `json:"BPowerFactor"`
+		CPowerFactor        uint16 `json:"CPowerFactor"`
+		TotalPowerFactor    uint16 `json:"TotalPowerFactor"`
+		AActiveEnergy       uint32 `json:"AActiveEnergy"`
+		BActiveEnergy       uint32 `json:"BActiveEnergy"`
+		CActiveEnergy       uint32 `json:"CActiveEnergy"`
+		ActiveEnergyTotal   uint32 `json:"ActiveEnergyTotal"`
+		AReactiveEnergy     uint32 `json:"AReactiveEnergy"`
+		BReactiveEnergy     uint32 `json:"BReactiveEnergy"`
+		CReactiveEnergy     uint32 `json:"CReactiveEnergy"`
+		ReactiveEnergyTotal uint32 `json:"ReactiveEnergyTotal"`
+		AApparentEnergy     uint32 `json:"AApparentEnergy"`
+		BApparentEnergy     uint32 `json:"BApparentEnergy"`
+		CApparentEnergy     uint32 `json:"CApparentEnergy"`
+		ApparentEnergyTotal uint32 `json:"ApparentEnergyTotal"`
+		Temperature         uint16 `json:"Temperature"`
+		LeakageCurrent      uint16 `json:"LeakageCurrent"`
 	}
 
 	ProtectParameters struct {
