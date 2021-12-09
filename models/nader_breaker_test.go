@@ -119,6 +119,62 @@ func TestMetricalDataToSenML(t *testing.T) {
 	assert.Equal(t, "mA", leakageCurrent["u"])
 }
 
+func TestMetricalUnmarshalJsonStringToMetricalData(t *testing.T) {
+	jsonString := `{
+		"AActiveEnergy": 0,
+		"AApparentEnergy": 0,
+		"AApparentPower": 0,
+		"ABVoltage": 0,
+		"ACurrent": 0,
+		"AFrequency": 501,
+		"APowerFactor": 100,
+		"AReactiveEnergy": 0,
+		"AReactivePower": 0,
+		"ARealPower": 0,
+		"AVoltage": 2268,
+		"ActiveEnergyTotal": 0,
+		"ApparentEnergyTotal": 0,
+		"ApparentPowerTotal": 0,
+		"BActiveEnergy": 0,
+		"BApparentEnergy": 0,
+		"BApparentPower": 0,
+		"BCVoltage": 0,
+		"BCurrent": 0,
+		"BFrequency": 0,
+		"BPowerFactor": 0,
+		"BReactiveEnergy": 0,
+		"BReactivePower": 0,
+		"BRealPower": 0,
+		"BVoltage": 0,
+		"CAVoltage": 0,
+		"CActiveEnergy": 0,
+		"CApparentEnergy": 0,
+		"CApparentPower": 0,
+		"CCurrent": 0,
+		"CFrequency": 0,
+		"CPowerFactor": 0,
+		"CReactiveEnergy": 0,
+		"CReactivePower": 0,
+		"CRealPower": 0,
+		"CVoltage": 0,
+		"LeakageCurrent": 5,
+		"PhaseState": 0,
+		"ReactiveEnergyTotal": 0,
+		"ReactivePowerTotal": 0,
+		"RealPowerTotal": 0,
+		"Temperature": 321,
+		"TotalPowerFactor": 100,
+		"TotalUsagePower": 0
+	}`
+
+	var target MetricalData
+	json.Unmarshal([]byte(jsonString), &target)
+
+	assert.Equal(t, uint16(501), target.AFrequency)
+	assert.Equal(t, uint16(100), target.TotalPowerFactor)
+	assert.Equal(t, uint16(321), target.Temperature)
+}
+
 func TestTimerControlStruct(t *testing.T) {
 
 	var myTime = TimerControlJson{
