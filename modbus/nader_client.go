@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Matrinos/nader-ndb5e-cli/models"
+	"github.com/tuxiot/nader-ndb5e-cli/models"
 )
 
 // ConnectSlave try to connect to given slave id

@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Matrinos/nader-ndb5e-cli/modbus"
-	"github.com/Matrinos/nader-ndb5e-cli/models"
+	"github.com/tuxiot/nader-ndb5e-cli/modbus"
+	"github.com/tuxiot/nader-ndb5e-cli/models"
 	"github.com/urfave/cli/v2"
 )
 
